@@ -1,4 +1,5 @@
 'use client';
+
 import ProtectedRoute from '@/components/protected-router';
 import { PostProvider } from '@/context/post-context';
 import { ProfileProvider } from '@/context/user-context';
@@ -6,42 +7,59 @@ import useBreakPoint from '@/hooks/use-breakpoint';
 import BottomNavigationBar from '@/layouts/bottom-navigation-bar';
 import Main from '@/layouts/main';
 import Sidebar from '@/layouts/sidebar';
-import eventBus from '@/utils/event-emitter';
-import React from 'react';
+import { store } from '@/store/store';
+import { fetcher } from '@/utils/axios';
+import { getPersistor } from '@rematch/persist';
+import React, { useState } from 'react';
+import { Provider } from 'react-redux';
+import { IoProvider } from 'socket.io-react-hook';
+import { SWRConfig } from 'swr';
+import { PersistGate } from 'redux-persist/lib/integration/react';
 
 type Props = {
   children: React.ReactNode;
 };
 
+const persistor = getPersistor();
+
 export default function MainLayout({ children }: Props) {
   const { breakpoint } = useBreakPoint();
 
-  const [isPostShow, setIsPostShow] = React.useState(false);
+  const isClient = typeof window !== 'undefined';
+  const [isMouted, setIsMouted] = useState(false);
+
+  const isSmallScreen = isClient && breakpoint === 'sm';
 
   React.useEffect(() => {
-    const handleToggle = (status: boolean) => {
-      setIsPostShow(status);
-    };
-
-    eventBus.on('isShowCreatePost', handleToggle);
-
-    return () => {
-      eventBus.off('isShowCreatePost', handleToggle);
-    };
+    setIsMouted(true);
   }, []);
 
-  const isSmallScreen = breakpoint === 'sm';
   return (
     <ProtectedRoute>
-      <ProfileProvider>
-        <PostProvider>
-          <div className="h-fit block bg-cushion md:flex relative 3xl:w-[1600px] mx-auto w-full after:absolute after:inset-0 after:z-99  after:shadow-wrapper after:pointer-events-none">
-            {isSmallScreen || <Sidebar className="bg-surface-3" />}
-            <Main>{children}</Main>
-            {isSmallScreen && !isPostShow && <BottomNavigationBar />}
-          </div>
-        </PostProvider>
-      </ProfileProvider>
+      <Provider store={store}>
+        <PersistGate persistor={persistor}>
+          <IoProvider>
+            <SWRConfig
+              value={{
+                fetcher,
+                dedupingInterval: 5000,
+              }}
+            >
+              <ProfileProvider>
+                <PostProvider>
+                  {isMouted && (
+                    <div className="h-screen w-screen bg-cushion block md:flex relative">
+                      {isSmallScreen || <Sidebar className="bg-surface-3" />}
+                      <Main>{children}</Main>
+                      {isSmallScreen && <BottomNavigationBar />}
+                    </div>
+                  )}
+                </PostProvider>
+              </ProfileProvider>
+            </SWRConfig>
+          </IoProvider>
+        </PersistGate>
+      </Provider>
     </ProtectedRoute>
   );
 }

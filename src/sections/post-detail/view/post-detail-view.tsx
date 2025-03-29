@@ -30,8 +30,9 @@ export default function PostDetailView({ id }: { id: string }) {
   const [isCreated, setIsCreated] = React.useState(false);
   const [parentComment, setParentComment] = React.useState<{
     id: string;
+    fullname: string;
     username: string;
-  }>({ id: '', username: '' });
+  }>({ id: '', fullname: '',username: '' });
 
   const handleViewFullPost = () => {
     const newIsViewFull = !isViewFull;

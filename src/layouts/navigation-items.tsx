@@ -1,6 +1,6 @@
 import {
-  BookIcon,
-  MarketIcon,
+  EventIcon,
+  MarketplaceIcon,
   MessageIcon,
   NotificationIcon,
 } from '@/components/icons';
@@ -22,23 +22,23 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     path: '/notifications',
   },
   {
-    title: 'Messages',
-    Icon: <MessageIcon />,
-    path: '/messages',
-  },
-  {
-    title: 'Bookmarks',
-    Icon: <BookIcon />,
-    path: '/bookmark',
-  },
-  {
     title: 'My Profile',
     Icon: <Profile />,
     path: '/profile',
   },
   {
+    title: 'Messages',
+    Icon: <MessageIcon />,
+    path: '/messages',
+  },
+  {
+    title: 'Event',
+    Icon: <EventIcon />,
+    path: '/event',
+  },
+  {
     title: 'Marketplace',
-    Icon: <MarketIcon />,
+    Icon: <MarketplaceIcon />,
     path: '/market',
   },
 ];

@@ -32,25 +32,18 @@ const persistor = getPersistor();
 
 export default function MainLayout({ children }: Props) {
   const { breakpoint } = useBreakPoint();
-  const [isPostShow, setIsPostShow] = useState(false);
   const [showSidebarRight, setShowSidebarRight] = useState(true);
   const isClient = typeof window !== 'undefined';
   const [isMouted, setIsMouted] = useState(false);
 
   useEffect(() => {
-    const handleTogglePostShow = (status: boolean) => {
-      setIsPostShow(status);
-    };
-
     const handleToggleSidebarRight = (isViewFull: boolean) => {
       setShowSidebarRight(!isViewFull);
     };
 
-    eventBus.on('isShowCreatePost', handleTogglePostShow);
     eventBus.on('toggleSidebarRight', handleToggleSidebarRight);
 
     return () => {
-      eventBus.off('isShowCreatePost', handleTogglePostShow);
       eventBus.off('toggleSidebarRight', handleToggleSidebarRight);
     };
   }, []);
@@ -81,11 +74,11 @@ export default function MainLayout({ children }: Props) {
               <ProfileProvider>
                 <PostProvider>
                   {isMouted && (
-                    <div className="h-fit bg-cushion block md:flex relative 3xl:w-[1600px] mx-auto w-full after:absolute after:inset-0 after:z-99 after:shadow-wrapper after:pointer-events-none">
+                    <div className="h-screen w-screen bg-cushion block md:flex relative">
                       {isSmallScreen || <Sidebar />}
                       <Main className="bg-surface">{children}</Main>
                       {isLargeScreen && showSidebarRight && <SidebarRight />}
-                      {isSmallScreen && !isPostShow && <BottomNavigationBar />}
+                      {isSmallScreen && <BottomNavigationBar />}
                     </div>
                   )}
                 </PostProvider>

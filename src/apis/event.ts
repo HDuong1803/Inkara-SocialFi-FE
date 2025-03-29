@@ -1,0 +1,43 @@
+import axiosInstance from '@/utils/axios';
+import { endpoints } from '@/utils/axios';
+
+import { IEvent } from '@/interfaces/event';
+import { IApiResponse } from '@/interfaces/api-response';
+import { InputFilter } from './dto/filter.dto';
+import { InputPagination } from './dto/pagination.dto';
+
+//--------------------------------------------------------------------------------------------
+
+export const getListEvent = async (
+  { filterBy }: InputFilter,
+  { startId, offset, limit }: InputPagination
+): Promise<IApiResponse<IEvent[]>> => {
+  const filter = {
+    period: 'ALL',
+    filterBy,
+  };
+  const pagination = {
+    startId,
+    offset,
+    limit,
+  };
+  const response = await axiosInstance.get<IApiResponse<IEvent[]>>(
+    endpoints.event.getMany,
+    {
+      params: {
+        ...filter,
+        ...pagination,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const getEventDetail = async (
+  id: string
+): Promise<IApiResponse<IEvent>> => {
+  const response = await axiosInstance.get<IApiResponse<IEvent>>(
+    endpoints.event.getById(id)
+  );
+  return response.data;
+};

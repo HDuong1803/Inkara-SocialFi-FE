@@ -13,6 +13,8 @@ export enum UserFilterByOption {
   LISTING = 'LISTING',
   BUY_OFFER = 'BUY_OFFER',
   SELL_OFFER = 'SELL_OFFER',
+  ALL_EVENTS = 'ALL_EVENTS',
+  MY_EVENTS = 'MY_EVENTS',
 }
 
 export interface InputFilter {

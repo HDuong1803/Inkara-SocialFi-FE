@@ -4,6 +4,6 @@ import { MarketView } from '@/sections/market/view';
 
 //-----------------------------------------------------------------------------------------------
 
-export default function Explore() {
+export default function Market() {
   return <MarketView />;
 }

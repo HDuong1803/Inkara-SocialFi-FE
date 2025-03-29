@@ -175,5 +175,14 @@ export const endpoints = {
     create: `/room`,
     addUser: (id: string) => `/room/add-user/${id}`,
     removeUser: (id: string) => `/room/remove-user/${id}`,
+  },
+  
+  event: {
+    getMany: `/event/list`,
+    getById: (id: string) => `/event/${id}`,
+    requestEvent: `/event/request-event-creation`,
+    voteEvent: `/event/vote-for-event`,
+    update: (id: string) => `/event/${id}`,
+    delete: (id: string) => `/event/${id}`,
   }
 };
