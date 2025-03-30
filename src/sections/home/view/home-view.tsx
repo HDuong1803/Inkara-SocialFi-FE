@@ -17,6 +17,7 @@ import { Post } from '@/components/post';
 import SearchInput from '@/components/search-input/search-input';
 import MobileSidebarTrigger from '@/components/sidebar-trigger/mobile-sidebar-trigger';
 import { usePost } from '@/context/post-context';
+import { USER_AVATAR_PLACEHOLDER } from '@/constant';
 
 // ----------------------------------------------------------------------
 
@@ -83,7 +84,7 @@ export default function HomeView() {
             className="size-[44px] min-w-[44px]"
           />
           <MobileSidebarTrigger className="md:hidden" onClick={toggleSidebar}>
-            <Avatar src={user.photo.url} alt={user.fullname} />
+            <Avatar src={user?.photo?.url || USER_AVATAR_PLACEHOLDER} alt={user.fullname} />
           </MobileSidebarTrigger>
         </div>
         <ComposerInput usedBy="post" className="relative" />
