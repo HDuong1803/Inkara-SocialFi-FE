@@ -300,11 +300,11 @@ export default function EventsView() {
                   <div className="flex justify-between text-caption">
                     <div className="flex items-center text-secondary">
                       <Award className="h-4 w-4 mr-2 text-tertiary" />
-                      {event.totalNFTsSubmitted} NFTs
+                      {event._count.nftSubmissions} NFTs
                     </div>
                     <div className="flex items-center text-secondary">
                       <TrendingUp className="h-4 w-4 mr-2 text-tertiary" />
-                      {event.votesForCreation} votes
+                      {event._count.votes} votes
                     </div>
                   </div>
                 </div>

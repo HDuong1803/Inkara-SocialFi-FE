@@ -69,7 +69,7 @@ export default function Comment({
         <div className="absolute left-10 top-8 bottom-0 w-px bg-neutral-300 dark:bg-neutral-600" />
       )}
 
-      <div className="flex gap-3 rounded-lg transition-colors">
+      <div className="flex gap-3 rounded-lg transition-colors mt-5">
         {/* Avatar */}
         <div className="flex-shrink-0 z-10">
           <Image

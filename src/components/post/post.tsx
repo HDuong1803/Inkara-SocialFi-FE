@@ -225,7 +225,7 @@ export default function Post({
           })}
         </Typography>
 
-        {data.creatorId === (userProfile as IUserProfile).id && (
+        {data.creatorId === (userProfile as IUserProfile)?.id && (
           <MoreIcon onClick={handleMoreOptions} />
         )}
         {openMoreOptionsId === data.id && (
