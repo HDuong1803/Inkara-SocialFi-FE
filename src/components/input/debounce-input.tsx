@@ -1,8 +1,5 @@
 import React from 'react';
-
 import { Input } from '.';
-
-// ------------------------------------------------------------------------------------------
 
 export default function DebouncedInput({
   value: initialValue,
@@ -22,17 +19,17 @@ export default function DebouncedInput({
 
   React.useEffect(() => {
     const timeout = setTimeout(() => {
-      return onChange(String(value));
+      onChange(String(value));
     }, debounce);
 
     return () => clearTimeout(timeout);
-  }, [value, onChange, debounce]);
+  }, [value, debounce, onChange]);
 
   return (
     <Input
       {...props}
       value={value}
-      onChange={(e) => setValue(e.target.value as string)}
+      onChange={(e) => setValue(e.target.value)}
     />
   );
 }

@@ -35,3 +35,11 @@ export interface IEvent {
         nftSubmissions: number
     }
 }
+
+export interface IEventCreation {
+    duration: string
+    entryFee: string
+    depositAmount: string
+    maxParticipants: string
+    description: string
+}

@@ -1,5 +1,5 @@
 import { createWalletClient, createPublicClient, custom, http } from 'viem';
-import { sepolia } from 'viem/chains';
+import { polygonAmoy } from 'viem/chains';
 import 'viem/window';
 
 export async function ConnectWalletClient() {
@@ -19,7 +19,7 @@ export async function ConnectWalletClient() {
   // Declare a Wallet Client
   // This creates a wallet client using the Sepolia chain and the custom transport
   const walletClient = createWalletClient({
-    chain: sepolia,
+    chain: polygonAmoy,
     transport: transport,
   });
 
@@ -43,9 +43,9 @@ export function ConnectPublicClient() {
   // Declare a Public Client
   // This creates a public client using the Sepolia chain and an HTTP transport
   const publicClient = createPublicClient({
-    chain: sepolia,
+    chain: polygonAmoy,
     transport: http(
-      'https://sepolia.infura.io/v3/335f71a625f94f5dbe41892b802d7bcd'
+      'https://rpc-amoy.polygon.technology'
     ),
   });
 

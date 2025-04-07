@@ -17,18 +17,26 @@ import { UserFilterByOption } from '@/apis/dto/filter.dto';
 import { Avatar } from '@/components/avatar';
 import { Card, CardContent } from '@/components/card/card';
 import { USER_AVATAR_PLACEHOLDER } from '@/constant';
+import CreateEventModal from '../components/new-event';
 
 export default function EventsView() {
   const [events, setEvents] = useState<IEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<EventStatus | 'ALL'>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<EventStatus | 'ALL'>(
+    'ALL'
+  );
   const [showMyEvents, setShowMyEvents] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await getListEvent(
-          { filterBy: showMyEvents ? UserFilterByOption.MY_EVENTS : UserFilterByOption.ALL_EVENTS },
+          {
+            filterBy: showMyEvents
+              ? UserFilterByOption.MY_EVENTS
+              : UserFilterByOption.ALL_EVENTS,
+          },
           { startId: 0, offset: 1, limit: 10 }
         );
         setEvents(response.data);
@@ -42,13 +50,22 @@ export default function EventsView() {
     fetchEvents();
   }, [showMyEvents]);
 
-  const filteredEvents = events.filter(event => 
+  const filteredEvents = events.filter((event) =>
     selectedStatus === 'ALL' ? true : event.status === selectedStatus
   );
 
-  const totalDeposit = filteredEvents.reduce((sum, event) => sum + parseFloat(event.depositAmount), 0);
-  const totalParticipants = filteredEvents.reduce((sum, event) => sum + event._count.participants, 0);
-  const totalNFTs = filteredEvents.reduce((sum, event) => sum + event.totalNFTsSubmitted, 0);
+  const totalDeposit = filteredEvents.reduce(
+    (sum, event) => sum + parseFloat(event.depositAmount),
+    0
+  );
+  const totalParticipants = filteredEvents.reduce(
+    (sum, event) => sum + event._count.participants,
+    0
+  );
+  const totalNFTs = filteredEvents.reduce(
+    (sum, event) => sum + event._count.nftSubmissions,
+    0
+  );
   const activeEvents = filteredEvents.filter(
     (event) => event.status === EventStatus.ONGOING
   ).length;
@@ -87,8 +104,8 @@ export default function EventsView() {
       daysLeft > 20
         ? 'text-green-600'
         : daysLeft > 10
-        ? 'text-amber-500'
-        : 'text-red-600';
+          ? 'text-amber-500'
+          : 'text-red-600';
 
     return (
       <span className={colorClass}>
@@ -118,14 +135,21 @@ export default function EventsView() {
       {/* Filter Options */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div className="flex flex-wrap gap-2">
-          {['ALL', EventStatus.UPCOMING, EventStatus.ONGOING, EventStatus.ENDED].map((status) => (
+          {[
+            'ALL',
+            EventStatus.UPCOMING,
+            EventStatus.ONGOING,
+            EventStatus.ENDED,
+          ].map((status) => (
             <button
               key={status}
               onClick={() => setSelectedStatus(status as EventStatus | 'ALL')}
               className={`px-4 py-2 rounded-full text-caption transition-colors
-                ${selectedStatus === status 
-                  ? 'bg-surface-3 text-primary border border-neutral1-30' 
-                  : 'bg-surface-2 text-secondary hover:bg-surface-3'}
+                ${
+                  selectedStatus === status
+                    ? 'bg-surface-3 text-primary border border-neutral1-30'
+                    : 'bg-surface-2 text-secondary hover:bg-surface-3'
+                }
               `}
             >
               {status === 'ALL' ? 'ALL EVENTS' : status.replace('_', ' ')}
@@ -133,16 +157,31 @@ export default function EventsView() {
           ))}
         </div>
 
-        <button
-          onClick={() => setShowMyEvents(!showMyEvents)}
-          className={`px-4 py-2 rounded-full text-caption transition-colors
-            ${showMyEvents 
-              ? 'bg-surface-3 text-primary border border-neutral1-30' 
-              : 'bg-surface-2 text-secondary hover:bg-surface-3'}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-4 py-2 rounded-full text-caption bg-surface-2 text-secondary hover:bg-surface-3 transition-colors"
+          >
+            Create Event
+          </button>
+          {isCreateModalOpen && (
+        <CreateEventModal
+          onClose={() => setIsCreateModalOpen(false)}
+        />
+      )}
+          <button
+            onClick={() => setShowMyEvents(!showMyEvents)}
+            className={`px-4 py-2 rounded-full text-caption transition-colors
+            ${
+              showMyEvents
+                ? 'bg-surface-3 text-primary border border-neutral1-30'
+                : 'bg-surface-2 text-secondary hover:bg-surface-3'
+            }
           `}
-        >
-          {showMyEvents ? 'Showing My Events' : 'Show All Events'}
-        </button>
+          >
+            {showMyEvents ? 'Showing My Events' : 'Show All Events'}
+          </button>
+        </div>
       </div>
 
       {/* Summary Statistics */}
@@ -154,7 +193,9 @@ export default function EventsView() {
             </div>
             <div>
               <p className="text-base2 text-secondary">Total Deposit</p>
-              <h3 className="text-h5 font-semibold text-primary">${totalDeposit.toFixed(2)}</h3>
+              <h3 className="text-h5 font-semibold text-primary">
+                ${totalDeposit.toFixed(2)}
+              </h3>
             </div>
           </CardContent>
         </Card>
@@ -165,7 +206,9 @@ export default function EventsView() {
             </div>
             <div>
               <p className="text-base2 text-secondary">Total Participants</p>
-              <h3 className="text-h5 font-semibold text-primary">{totalParticipants}</h3>
+              <h3 className="text-h5 font-semibold text-primary">
+                {totalParticipants}
+              </h3>
             </div>
           </CardContent>
         </Card>
@@ -173,10 +216,12 @@ export default function EventsView() {
           <CardContent className="flex items-center p-5">
             <div className="rounded-full bg-neutral2-15 p-3 mr-4">
               <Award className="h-6 w-6 text-wine" />
-              </div>
+            </div>
             <div>
               <p className="text-base2 text-secondary">Total NFTs Submitted</p>
-              <h3 className="text-h5 font-semibold text-primary">{totalNFTs}</h3>
+              <h3 className="text-h5 font-semibold text-primary">
+                {totalNFTs || 0}
+              </h3>
             </div>
           </CardContent>
         </Card>
@@ -184,17 +229,21 @@ export default function EventsView() {
           <CardContent className="flex items-center p-5">
             <div className="rounded-full bg-neutral2-15 p-3 mr-4">
               <Calendar className="h-6 w-6 text-wine" />
-              </div>
+            </div>
             <div>
               <p className="text-base2 text-secondary">Active Events</p>
-              <h3 className="text-h5 font-semibold text-primary">{activeEvents} / {filteredEvents.length}</h3>
-              </div>
+              <h3 className="text-h5 font-semibold text-primary">
+                {activeEvents} / {filteredEvents.length}
+              </h3>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Events List */}
-      <h2 className="text-h4 font-semibold text-primary mb-6">Event Listings</h2>
+      <h2 className="text-h4 font-semibold text-primary mb-6">
+        Event Listings
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredEvents.map((event) => (
           <Link href={`/event/${event.eventId}`} key={event.eventId}>
@@ -217,39 +266,46 @@ export default function EventsView() {
                       </p>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 text-caption rounded-full ${getStatusColor(event.status)}`}>
+                  <span
+                    className={`px-3 py-1 text-caption rounded-full ${getStatusColor(event.status)}`}
+                  >
                     {event.status}
                   </span>
                 </div>
 
                 {/* Body */}
                 <div className="flex-1 space-y-4">
-                  <p className="text-base2 text-secondary line-clamp-3">{event.description}</p>
-                  
+                  <p className="text-base2 text-secondary line-clamp-3">
+                    {event.description}
+                  </p>
+
                   <div className="space-y-2">
                     <div className="flex items-center text-base2 text-secondary">
                       <Clock className="h-4 w-4 mr-2 text-tertiary" />
-                      <span className="truncate">{formatDate(event.startTime)} - {formatDate(event.endTime)}</span>
+                      <span className="truncate">
+                        {formatDate(event.startTime)} -{' '}
+                        {formatDate(event.endTime)}
+                      </span>
                     </div>
-                    
+
                     <div className="text-caption text-wine font-medium">
                       {getTimeRemaining(event)}
                     </div>
 
                     <div className="flex justify-between mt-2">
-                    <div className="flex items-center text-base2 text-secondary">
-                      <DollarSign className="h-4 w-4 mr-2 text-tertiary" />
-                      <span>
-                        Entry: ${parseFloat(event.entryFee).toFixed(2)}
-                      </span>
+                      <div className="flex items-center text-base2 text-secondary">
+                        <DollarSign className="h-4 w-4 mr-2 text-tertiary" />
+                        <span>
+                          Entry: ${parseFloat(event.entryFee).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-base2 text-secondary">
+                        <DollarSign className="h-4 w-4 mr-2 text-tertiary" />
+                        <span>
+                          Deposit: ${parseFloat(event.depositAmount).toFixed(2)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center text-base2 text-secondary">
-                      <DollarSign className="h-4 w-4 mr-2 text-tertiary" />
-                      <span>
-                        Deposit: ${parseFloat(event.depositAmount).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
                   </div>
 
                   {/* Progress bar */}
@@ -259,12 +315,16 @@ export default function EventsView() {
                         <Users className="h-4 w-4 mr-1 text-tertiary" />
                         Participants
                       </span>
-                      <span>{event._count.participants}/{event.maxParticipants}</span>
+                      <span>
+                        {event._count.participants}/{event.maxParticipants}
+                      </span>
                     </div>
                     <div className="w-full bg-neutral2-10 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-wine h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${Math.min((event._count.participants / event.maxParticipants) * 100, 100)}%` }}
+                        style={{
+                          width: `${Math.min((event._count.participants / event.maxParticipants) * 100, 100)}%`,
+                        }}
                       />
                     </div>
                   </div>
@@ -272,26 +332,26 @@ export default function EventsView() {
 
                 {event.aiRiskScore > 0 && (
                   <div className="flex items-center mt-3 text-sm">
-                  <AlertTriangle
-                    className={`h-4 w-4 mr-1 ${
-                    event.aiRiskScore < 20
-                      ? 'text-green-600'
-                      : event.aiRiskScore < 50
-                      ? 'text-amber-500'
-                      : 'text-red-600'
-                    }`}
-                  />
-                  <span
-                    className={
-                    event.aiRiskScore < 20
-                      ? 'text-green-600'
-                      : event.aiRiskScore < 50
-                      ? 'text-amber-500'
-                      : 'text-red-600'
-                    }
-                  >
-                    Risk score: {event.aiRiskScore}/100
-                  </span>
+                    <AlertTriangle
+                      className={`h-4 w-4 mr-1 ${
+                        event.aiRiskScore < 20
+                          ? 'text-green-600'
+                          : event.aiRiskScore < 50
+                            ? 'text-amber-500'
+                            : 'text-red-600'
+                      }`}
+                    />
+                    <span
+                      className={
+                        event.aiRiskScore < 20
+                          ? 'text-green-600'
+                          : event.aiRiskScore < 50
+                            ? 'text-amber-500'
+                            : 'text-red-600'
+                      }
+                    >
+                      Risk score: {event.aiRiskScore}/100
+                    </span>
                   </div>
                 )}
 

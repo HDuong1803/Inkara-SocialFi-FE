@@ -1,10 +1,11 @@
 import axiosInstance from '@/utils/axios';
 import { endpoints } from '@/utils/axios';
 
-import { IEvent } from '@/interfaces/event';
+import { IEvent, IEventCreation } from '@/interfaces/event';
 import { IApiResponse } from '@/interfaces/api-response';
 import { InputFilter } from './dto/filter.dto';
 import { InputPagination } from './dto/pagination.dto';
+import { OutputContract } from '@/interfaces/transaction';
 
 //--------------------------------------------------------------------------------------------
 
@@ -41,3 +42,13 @@ export const getEventDetail = async (
   );
   return response.data;
 };
+
+export const createEvent = async (
+  data: IEventCreation
+): Promise<IApiResponse<OutputContract>> => {
+  const response = await axiosInstance.post<IApiResponse<OutputContract>>(
+    endpoints.event.requestEvent,
+    data
+  );
+  return response.data;
+}
