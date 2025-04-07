@@ -9,8 +9,6 @@ export interface IEvent {
     creator: string
     entryFee: string
     depositAmount: string
-    votesForCreation: number
-    totalNFTsSubmitted: number
     maxParticipants: number
     description: string
     aiReview: string

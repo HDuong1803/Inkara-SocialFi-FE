@@ -52,3 +52,24 @@ export const createEvent = async (
   );
   return response.data;
 }
+
+export const voteForEvent = async (
+  eventId: number
+): Promise<IApiResponse<OutputContract>> => {
+  const response = await axiosInstance.post<IApiResponse<OutputContract>>(
+    endpoints.event.voteEvent,
+    {
+      eventId: eventId,
+    }
+  );
+  return response.data;
+}
+
+export const hasVotedForEvent = async (
+  eventId: string
+): Promise<IApiResponse<boolean>> => {
+  const response = await axiosInstance.get<IApiResponse<boolean>>(
+    endpoints.event.hasVoted(eventId)
+  );
+  return response.data;
+}

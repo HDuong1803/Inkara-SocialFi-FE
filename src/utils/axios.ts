@@ -184,5 +184,6 @@ export const endpoints = {
     voteEvent: `/event/vote-for-event`,
     update: (id: string) => `/event/${id}`,
     delete: (id: string) => `/event/${id}`,
+    hasVoted: (id: string) => `/event/check-voted-event/${id}`,
   }
 };

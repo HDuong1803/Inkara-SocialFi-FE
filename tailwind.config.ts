@@ -159,6 +159,9 @@ const config: Config = {
           25: 'rgba(255, 255, 255, 0.40)',
         },
         wine: '#BD3027',
+        warning: '#FFA500',
+        error: '#FF0000',
+        success: '#00B860',
         hover: '#f8f8f81a',
       },
       width: {
