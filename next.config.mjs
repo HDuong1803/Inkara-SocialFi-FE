@@ -6,6 +6,8 @@ const nextConfig = {
       'images.unsplash.com',
       'localhost',
       'res.cloudinary.com',
+      'gateway.pinata.cloud',
+      'ipfs.io',
     ],
   },
   output: 'standalone',

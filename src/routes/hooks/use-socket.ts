@@ -10,7 +10,7 @@ export const useAuthenticatedSocket = (namespace: string) => {
         enabled: !!user && authenticated,
         withCredentials: true,
         reconnectionDelayMax: 10000,
-        port: 4000,
+        port: 8080,
         host: 'localhost',
         hostname: 'localhost',
         reconnection: true,

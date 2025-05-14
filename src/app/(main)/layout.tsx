@@ -72,16 +72,16 @@ export default function MainLayout({ children }: Props) {
               }}
             >
               <ProfileProvider>
-                <PostProvider>
-                  {isMouted && (
-                    <div className="h-screen w-screen bg-cushion block md:flex relative">
-                      {isSmallScreen || <Sidebar />}
-                      <Main className="bg-surface">{children}</Main>
-                      {isLargeScreen && showSidebarRight && <SidebarRight />}
-                      {isSmallScreen && <BottomNavigationBar />}
-                    </div>
-                  )}
-                </PostProvider>
+                  <PostProvider>
+                    {isMouted && (
+                      <div className="h-screen w-screen bg-cushion block md:flex relative">
+                        {isSmallScreen || <Sidebar />}
+                        <Main className="bg-surface">{children}</Main>
+                        {isLargeScreen && showSidebarRight && <SidebarRight />}
+                        {isSmallScreen && <BottomNavigationBar />}
+                      </div>
+                    )}
+                  </PostProvider>
               </ProfileProvider>
             </SWRConfig>
           </IoProvider>

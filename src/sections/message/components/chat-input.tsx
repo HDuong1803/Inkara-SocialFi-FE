@@ -1,67 +1,45 @@
-'use client';
-
-import React from 'react';
-import { UploadIcon } from '@/components/icons';
+// components/ChatInput.tsx
+import React, { useState } from 'react';
+import { Button } from '@/components/button';
+import { SendIcon } from 'lucide-react';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
+  onTyping?: (text: string) => void;
 }
 
-export default function ChatInput({ onSendMessage }: ChatInputProps) {
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+export default function ChatInput({ onSendMessage, onTyping }:ChatInputProps) {
+  const [text, setText] = useState('');
 
-  const handleButtonClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const handleSend = () => {
+    if (text.trim()) {
+      onSendMessage(text);
+      setText('');
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      console.log('Selected file:', file);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const inputElement = e.currentTarget.querySelector('input');
-    const message = inputElement ? inputElement.value : '';
-    if (message) {
-      onSendMessage(message);
-      if (inputElement) {
-        inputElement.value = '';
-      }
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setText(e.target.value);
+    onTyping?.(e.target.value);
   };
 
   return (
-    <div className="w-full p-3">
-      <form onSubmit={handleSubmit}>
-        <div className="flex items-center gap-4 p-2.5 rounded-[2.625rem] bg-neutral4-30">
-          <button
-            className="btn-upload p-[0.4375rem] group"
-            onClick={handleButtonClick}
-          >
-            <UploadIcon />
-
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
-          </button>
-
-          <input
-            type="text"
-            placeholder="Type a message..."
-            className="grow text-primary placeholder:text-light placeholder:text-sm placeholder:font-normal bg-transparent"
-          />
-          <button type="submit" className="hidden"></button>
-        </div>
-      </form>
+    <div className="flex items-center gap-2 p-3 bg-neutral2-5 rounded-b-[20px]">
+      <input
+        type="text"
+        value={text}
+        onChange={handleChange}
+        placeholder="Type a message..."
+        className="flex-1 px-4 py-2 rounded-[20px] bg-neutral2-3 text-gray-100 placeholder-gray-400
+          border border-neutral2-20 focus:border-wine focus:ring-2 focus:ring-wine/50
+          shadow-neumorphic-dark-inset"
+      />
+      <Button
+        onClick={handleSend}
+        className="px-4 py-2 bg-gradient-to-r from-cherry to-black-600 text-white rounded-full
+          shadow-card hover:shadow-wrapper"
+        child={<SendIcon />}
+      />
     </div>
   );
-}
+};

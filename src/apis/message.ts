@@ -30,9 +30,15 @@ export const createMessage = async (
     return response.data;
 };
 
-export const createPost = async (): Promise<IApiResponse<IMessage>> => {
+export const getMessageConversation = async (conversationId: string, page: number, limit: number = 20): Promise<IApiResponse<IMessage[]>> => {
     const response = await axiosInstance.get(
-        endpoints.message.getMessage
+        endpoints.message.getMessageConversation(conversationId),
+        {
+            params: {
+                page,
+                limit
+            }
+        }
     );
 
     return response.data;

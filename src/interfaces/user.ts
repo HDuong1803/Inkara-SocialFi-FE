@@ -25,7 +25,7 @@ export interface IUserProfile {
     followers: number
     followings: number
     posts: number
-    nft: number
+    ownedNFTs: number
   }
   websiteUrl?: string
 }

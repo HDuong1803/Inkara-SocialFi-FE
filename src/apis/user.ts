@@ -2,27 +2,15 @@
 import { IApiResponse } from '@/interfaces/api-response';
 import { IUserProfile } from '@/interfaces/user';
 import {
-  default as axios,
   default as axiosInstance,
   endpoints,
 } from '@/utils/axios';
 
 // ----------------------------------------------------------------------
 
-interface IGetUserListParams {
-  url: string;
-  params: Record<string, any>;
-}
-
-export const getUserList = async <T>({
-  url,
-  params,
-}: IGetUserListParams): Promise<T> => {
-  const { data } = await axios.get<T>(url, {
-    params,
-  });
-
-  return data;
+export const getManyUser = async(): Promise<IApiResponse<IUserProfile[]>> => {
+  const response = await axiosInstance.get(endpoints.user.list);
+  return response.data;
 };
 
 export const getUserProfile = async (): Promise<IApiResponse<IUserProfile>> => {

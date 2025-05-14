@@ -106,6 +106,7 @@ export const endpoints = {
 
   user: {
     me: `/user/me`,
+    list: `/user/list`,
     create: `/profile/`,
     update: `/user/update-profile`,
     profile: (id: string) => `user/${id}`,
@@ -155,7 +156,7 @@ export const endpoints = {
   message: {
     getMessageRoom: (id: string) => `/message/${id}`,
     createMessageRoom: (id: string) => `/message/${id}`,
-    getMessage: `/message`,
+    getMessageConversation: (conversationId: string) => `/message/conversation/${conversationId}`,
   },
 
   conversation: {
@@ -185,5 +186,12 @@ export const endpoints = {
     update: (id: string) => `/event/${id}`,
     delete: (id: string) => `/event/${id}`,
     hasVoted: (id: string) => `/event/check-voted-event/${id}`,
+  },
+
+  nft: {
+    getMyNfts: `/nft/me`,
+    getNftByUser: (id: string) => `/nft/user/${id}`,
+    getNftById: (slug: string) => `/nft/${slug}`,
+    mintNft: `/nft/mint`
   }
 };

@@ -159,6 +159,7 @@ const config: Config = {
           25: 'rgba(255, 255, 255, 0.40)',
         },
         wine: '#BD3027',
+        cherry: '#3b3bbc90',
         warning: '#FFA500',
         error: '#FF0000',
         success: '#00B860',
@@ -198,8 +199,16 @@ const config: Config = {
 
         modal:
           'linear-gradient(0deg, rgba(248, 248, 248, 0.05) 0%, rgba(255, 255, 255, 0.05) 100%),rgba(40, 40, 40, 0.70)',
+        'gradient-to-r': 'linear-gradient(to right, var(--tw-gradient-stops))',
+        'gradient-to-t': 'linear-gradient(to top, var(--tw-gradient-stops))',
       },
       boxShadow: {
+        'neumorphic-dark':
+          '4px 4px 8px rgba(0,0,0,0.4), -4px -4px 8px rgba(50,50,50,0.2)',
+        'neumorphic-dark-inset':
+          'inset 4px 4px 8px rgba(0,0,0,0.4), inset -4px -4px 8px rgba(50,50,50,0.2)',
+        'neumorphic-dark-hover':
+          '6px 6px 16px rgba(0,0,0,0.5), -6px -6px 16px rgba(50,50,50,0.3)',
         card:
           '2px 4px 16px 0px rgba(248, 248, 248, 0.06) inset, ' +
           '0px 24px 24px -16px rgba(5, 5, 5, 0.09), ' +
@@ -244,6 +253,7 @@ const config: Config = {
         'theme-box2': '0px 0px 5.622px 0px rgba(248, 248, 248, 0.25) inset',
       },
       backdropBlur: {
+        sm: '4px',
         50: 'blur(50px)',
         16: 'blur(16px)',
         35: 'blur(35.135135650634766px)',

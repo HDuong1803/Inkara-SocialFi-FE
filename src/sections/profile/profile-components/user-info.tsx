@@ -37,8 +37,8 @@ export default function InfoUser({ user }: UserInfoProps) {
   React.useEffect(() => {
     if (!user) return;
     (async () => {
-      if (user.id !== userProfile?.id) {
-        setIsFollowed(await hasFollowed(user.id));
+      if (user?.id !== userProfile?.id) {
+        setIsFollowed(await hasFollowed(user?.id));
       } else {
         setIsFollowed(false);
       }
@@ -47,16 +47,16 @@ export default function InfoUser({ user }: UserInfoProps) {
 
   const handleFollow = async () => {
     if (isFollowed) {
-      await followAction(user.id);
+      await followAction(user?.id);
       setIsFollowed(false);
     } else {
-      followAction(user.id);
+      followAction(user?.id);
       setIsFollowed(true);
     }
   };
 
   const handleShare = async () => {
-    const profileUrl = `${window.location.origin}/profile/${user.id}`;
+    const profileUrl = `${window.location.origin}/profile/${user?.id}`;
     try {
       await navigator.clipboard.writeText(profileUrl);
       setIsCopied(true);
@@ -91,14 +91,14 @@ export default function InfoUser({ user }: UserInfoProps) {
         >
             <div className="grow opacity-80">
             <Typography level="title" className="text-primary">
-              {user.fullname}
+              {user?.fullname}
             </Typography>
             <Typography level="base2r" className="text-tertiary">
-              @{user.username}
+              @{user?.username}
             </Typography>
             </div>
             <Typography level="base2r" className="text-tertiary">
-              {user.address}
+              {user?.address}
             </Typography>
           <Button
             child={
@@ -108,7 +108,7 @@ export default function InfoUser({ user }: UserInfoProps) {
             onClick={handleShare}
           />
 
-          {user.id !== userProfile?.id && (
+          {user?.id !== userProfile?.id && (
             <>
               <Button
                 child={
@@ -132,9 +132,9 @@ export default function InfoUser({ user }: UserInfoProps) {
             </>
           )}
 
-          {user.id === userProfile?.id && (
+          {user?.id === userProfile?.id && (
             <>
-              <Link href={`/profile/${user.id}/edit`}>
+              <Link href={`/profile/${user?.id}/edit`}>
                 <Button child={<EditIcon />} className="p-2.5 md:hidden" />
                 <Button
                   child={
@@ -149,7 +149,7 @@ export default function InfoUser({ user }: UserInfoProps) {
           )}
         </div>
         <Typography level="body2r" className="text-tertiary opacity-80">
-          {user.bio}
+          {user?.bio}
         </Typography>
 
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-6">
@@ -160,21 +160,21 @@ export default function InfoUser({ user }: UserInfoProps) {
                 level="base2r"
                 className="text-primary flex items-center gap-2"
               >
-                {user._count.posts || 0}
+                {user?._count.posts || 0}
                 <Typography level="base2r" className="text-tertiary">
                   posts
                 </Typography>
               </Typography>
             </div>
 
-            <Link href={`/profile/${user.id}/followers`}>
+            <Link href={`/profile/${user?.id}/followers`}>
               <div className="flex items-center gap-2 text-sm base opacity-80 cursor-pointer rounded-button px-3 py-2 hover:bg-neutral2-5">
                 <ProfileIcon />
                 <Typography
                   level="base2r"
                   className="text-primary flex items-center gap-2"
                 >
-                  {user._count.followers || 0}
+                  {user?._count.followers || 0}
                   <Typography level="base2r" className="text-tertiary">
                     followers
                   </Typography>
@@ -188,7 +188,7 @@ export default function InfoUser({ user }: UserInfoProps) {
                 level="base2r"
                 className="text-primary flex items-center gap-2"
               >
-                {user._count.nft || 0}
+                {user?._count.ownedNFTs || 0}
                 <Typography level="base2r" className="text-tertiary">
                   nfts
                 </Typography>
@@ -196,15 +196,15 @@ export default function InfoUser({ user }: UserInfoProps) {
             </div>
           </div>
 
-          {/* {user.websiteUrl && (
+          {/* {user?.websiteUrl && (
             <div className="flex items-center gap-2 text-sm base opacity-80 cursor-pointer rounded-button px-3 py-2 hover:bg-neutral2-5">
               <LinkIcon />
-              <a href={user.websiteUrl}>
+              <a href={user?.websiteUrl}>
                 <Typography
                   level="base2r"
                   className="text-primary flex items-center gap-2"
                 >
-                  {user.websiteUrl}abcaaaaa
+                  {user?.websiteUrl}abcaaaaa
                 </Typography>
               </a>
             </div>

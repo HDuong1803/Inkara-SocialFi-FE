@@ -15,6 +15,7 @@ import { Provider } from 'react-redux';
 import { IoProvider } from 'socket.io-react-hook';
 import { SWRConfig } from 'swr';
 import { PersistGate } from 'redux-persist/lib/integration/react';
+import { SocketProvider } from '@/context/socket-context';
 
 type Props = {
   children: React.ReactNode;
@@ -46,15 +47,17 @@ export default function MainLayout({ children }: Props) {
               }}
             >
               <ProfileProvider>
-                <PostProvider>
-                  {isMouted && (
-                    <div className="h-screen w-screen bg-cushion block md:flex relative">
-                      {isSmallScreen || <Sidebar className="bg-surface-3" />}
-                      <Main>{children}</Main>
-                      {isSmallScreen && <BottomNavigationBar />}
-                    </div>
-                  )}
-                </PostProvider>
+                <SocketProvider>
+                  <PostProvider>
+                    {isMouted && (
+                      <div className="h-screen w-screen bg-cushion block md:flex relative">
+                        {isSmallScreen || <Sidebar className="bg-surface-3" />}
+                        <Main>{children}</Main>
+                        {isSmallScreen && <BottomNavigationBar />}
+                      </div>
+                    )}
+                  </PostProvider>
+                </SocketProvider>
               </ProfileProvider>
             </SWRConfig>
           </IoProvider>
