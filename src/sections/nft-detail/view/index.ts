@@ -1,0 +1,1 @@
+export { default as NftDetailView } from './nft-detail-view';

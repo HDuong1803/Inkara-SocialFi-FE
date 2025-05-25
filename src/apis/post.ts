@@ -45,11 +45,11 @@ export const getPostDetail = async (
 export const createPost = async (
   data: CreatePost
 ): Promise<IApiResponse<IPost>> => {
-  const { image, ...rest } = data;
+  const { photoId, ...rest } = data;
 
   const response = await axiosInstance.post(
     endpoints.post.create,
-    image ? data : rest
+    photoId ? data : rest
   );
 
   return response.data;

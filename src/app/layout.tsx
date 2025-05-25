@@ -20,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen block relative bg-cushion h-full w-full before:fixed before:inset-0">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+            {children}
+        </AppProviders>
       </body>
     </html>
   );

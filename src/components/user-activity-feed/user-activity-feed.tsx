@@ -67,7 +67,7 @@ export default function ActivityFeed({
   const nfts = (
     <div className="w-full h-fit grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {(data as INftItem[]).map((nft) => {
-        const isOwner = userProfile?.address === nft.ownerAddress;
+        const isOwner = userProfile?.address === nft?.owner?.address;
         const isListed = nft.listing && nft.listing.length > 0;
 
         return (
@@ -80,7 +80,7 @@ export default function ActivityFeed({
             <Link href={`/nfts/${nft.id}`} className="block">
               <div className="relative w-full h-48 overflow-hidden rounded-xl">
                 <Image
-                  src={nft.image}
+                  src={nft.image ? nft.image : '/svg/list-empty.svg'}
                   fill
                   alt={nft.name}
                   loading="lazy"
@@ -124,7 +124,7 @@ export default function ActivityFeed({
                     level="baser"
                     className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cherry to-black-600"
                   >
-                    {nft.listing && nft.listing.length > 0 ? `${nft.listing[0].price} ETH` : '0 ETH'}
+                    {nft.listing && nft.listing.length > 0 ? `${nft.listing[0].price} INK` : '0 INK'}
                   </Typography>
                 ) : isOwner ? (
                   <button

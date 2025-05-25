@@ -1,7 +1,6 @@
 export interface Media {
-  filename: string;
+  fileEntityId: string;
+  id: string
   url: string;
-  ext: string;
-  contentType: string;
-  size: number;
+  uploadHash: string;
 }

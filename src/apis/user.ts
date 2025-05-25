@@ -19,11 +19,21 @@ export const getUserProfile = async (): Promise<IApiResponse<IUserProfile>> => {
 };
 
 export const updateUserProfile = async (
-  profileData: Partial<IUserProfile> & { url: string }
+  profileData: Partial<IUserProfile>
 ): Promise<IApiResponse<IUserProfile>> => {
-  const { data } = await axiosInstance.patch(
+  const { data } = await axiosInstance.put(
     endpoints.user.update,
     profileData
+  );
+  return data;
+};
+
+export const updateUserAvatar = async (
+  avatarData: { avatarId: string }
+): Promise<IApiResponse<IUserProfile>> => {
+  const { data } = await axiosInstance.patch(
+    endpoints.user.updateAvatar,
+    avatarData
   );
   return data;
 };

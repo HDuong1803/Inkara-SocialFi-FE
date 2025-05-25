@@ -30,7 +30,7 @@ export default function EditForm({
     fullname: userInfo.fullname,
     username: userInfo.username,
     bio: userInfo.bio,
-    websiteUrl: userInfo.websiteUrl || '',
+    // websiteUrl: userInfo.websiteUrl || '',
   });
 
   const handleChange = (name: keyof IUserProfile, value: string) => {
@@ -115,7 +115,7 @@ export default function EditForm({
               <LinkIcon />
               Link
             </Typography>
-            <div className="w-full flex justify-between items-center">
+            {/* <div className="w-full flex justify-between items-center">
               <DebouncedInput
                 name="websiteUrl"
                 onChange={(value) => handleChange('websiteUrl', value)}
@@ -125,7 +125,7 @@ export default function EditForm({
                 placeholder="https://example.com"
               />
               <OutlineCheckIcon />
-            </div>
+            </div> */}
           </li>
         </ul>
         {loading && <p>Updating...</p>}

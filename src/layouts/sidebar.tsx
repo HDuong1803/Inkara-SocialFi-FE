@@ -3,7 +3,6 @@ import React from 'react';
 
 import useBreakPoint from '@/hooks/use-breakpoint';
 
-import { useAuth } from '@/context/auth-context';
 import { paths } from '@/routes/paths';
 
 import { Avatar } from '@/components/avatar';
@@ -17,7 +16,6 @@ import {
   MoreIcon,
   SettingSlider,
 } from '@/components/icons';
-import { NewPostModal } from '@/components/new-post';
 import { Typography } from '@/components/typography';
 
 import { useUserProfile } from '@/context/user-context';
@@ -30,6 +28,7 @@ import { USER_AVATAR_PLACEHOLDER } from '@/constant/contants';
 import { cn } from '@/lib/utils';
 import { IUserProfile } from '@/interfaces/user';
 import { logout } from '@/apis/auth';
+import { NewNftModal } from '@/components/nft';
 
 //-----------------------------------------------------------------------------------------------
 
@@ -41,7 +40,7 @@ export default function Sidebar({ className }: SidebarProps) {
   const { breakpoint } = useBreakPoint();
   const unreadCount = useUnreadNoti();
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const [isCreatePost, setIsCreatePost] = React.useState(false);
+  const [isCreateNft, setIsCreateNft] = React.useState(false);
 
   const navItems = NAVIGATION_ITEMS.map((item) =>
     item.title === 'Notifications'
@@ -59,8 +58,8 @@ export default function Sidebar({ className }: SidebarProps) {
 
   React.useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isCreatePost) {
-        setIsCreatePost(false);
+      if (event.key === 'Escape' && isCreateNft) {
+        setIsCreateNft(false);
       }
     };
 
@@ -69,14 +68,14 @@ export default function Sidebar({ className }: SidebarProps) {
     return () => {
       document.removeEventListener('keydown', handleEsc);
     };
-  }, [isCreatePost]);
+  }, [isCreateNft]);
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const handleCreatePost = () => {
-    setIsCreatePost(!isCreatePost);
+  const handleCreateNft = () => {
+    setIsCreateNft(!isCreateNft);
   };
 
   return (
@@ -136,7 +135,7 @@ export default function Sidebar({ className }: SidebarProps) {
         <Button
           className={`${isExpanded ? 'px-6 py-3 w-full' : 'size-[44px]'}`}
           onClick={() => {
-            handleCreatePost();
+            handleCreateNft();
           }}
           child={
             isExpanded ? (
@@ -144,7 +143,7 @@ export default function Sidebar({ className }: SidebarProps) {
                 level="base2sm"
                 className="text-secondary select-none "
               >
-                Post
+                Mint NFT
               </Typography>
             ) : (
               <AddIcon />
@@ -153,7 +152,7 @@ export default function Sidebar({ className }: SidebarProps) {
         />
       </section>
 
-      {isCreatePost && <NewPostModal onBack={handleCreatePost} />}
+      {isCreateNft && <NewNftModal onBack={handleCreateNft} />}
     </aside>
   );
 }
@@ -165,7 +164,6 @@ interface UserSectionProps {
 
 export function UserSection({ isExpanded, user }: UserSectionProps) {
   const [isMoreOptions, setIsMoreOptions] = React.useState(false);
-  const auth = useAuth();
   const router = useRouter();
 
   const toggleMoreOptions = () => {
@@ -174,7 +172,7 @@ export function UserSection({ isExpanded, user }: UserSectionProps) {
 
   const handleLogout = async () => {
     await logout();
-    auth.setToken(null);
+    router.push('/login');
   };
 
   return (

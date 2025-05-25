@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { IMessage } from '@/interfaces/message';
 import { useSocket } from '@/context/socket-context';
 import { getMessageConversation } from '@/apis/message';
@@ -8,6 +8,9 @@ export const useConversation = (conversationId?: string) => {
   const [localMessages, setLocalMessages] = useState<IMessage[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  // Dùng ref để ngăn useEffect gọi nhiều lần
+  const hasInitializedRef = useRef(false);
 
   const loadMessages = useCallback(
     async (pageToLoad: number) => {
@@ -32,33 +35,42 @@ export const useConversation = (conversationId?: string) => {
     [conversationId]
   );
 
+  // Load ban đầu khi chọn conversation
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || hasInitializedRef.current) return;
+
+    hasInitializedRef.current = true; // chỉ chạy 1 lần
+    setLocalMessages([]);
+    setPage(1);
+    setHasMore(true);
 
     loadMessages(1);
-
     socket.emit('conversation:join', { conversationId, page: 1, limit: 20 });
 
-    socket.on('conversation:messages', (msgs: IMessage[]) => {
+    const handleInitialMessages = (msgs: IMessage[]) => {
       if (msgs.length > 0) {
-        setLocalMessages((prev) => (page === 1 ? msgs : [...msgs, ...prev]));
+        setLocalMessages(msgs);
         setHasMore(msgs.length === 20);
       } else {
         setHasMore(false);
       }
-    });
+    };
 
-    socket.on('message:created', (message: IMessage) => {
+    const handleNewMessage = (message: IMessage) => {
       if (message.conversationId === conversationId) {
         setLocalMessages((prev) => [...prev, message]);
       }
-    });
+    };
+
+    socket.on('conversation:messages', handleInitialMessages);
+    socket.on('message:created', handleNewMessage);
 
     return () => {
-      socket.off('conversation:messages');
-      socket.off('message:created');
+      socket.off('conversation:messages', handleInitialMessages);
+      socket.off('message:created', handleNewMessage);
+      hasInitializedRef.current = false;
     };
-  }, [conversationId, socket, page, loadMessages]);
+  }, [conversationId, socket, loadMessages]);
 
   const sendMessage = (message: string) => {
     if (conversationId) {
@@ -71,16 +83,17 @@ export const useConversation = (conversationId?: string) => {
   };
 
   const loadMoreMessages = () => {
-    if (hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      loadMessages(nextPage);
-      socket.emit('conversation:join', {
-        conversationId,
-        page: nextPage,
-        limit: 20,
-      });
-    }
+    if (!hasMore) return;
+
+    const nextPage = page + 1;
+    setPage(nextPage);
+    loadMessages(nextPage);
+
+    socket.emit('conversation:join', {
+      conversationId,
+      page: nextPage,
+      limit: 20,
+    });
   };
 
   return {

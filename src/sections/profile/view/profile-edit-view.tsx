@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import React from 'react';
 
-import { updateUserProfile } from '@/apis/user';
+import { updateUserAvatar, updateUserProfile } from '@/apis/user';
 import { useUserProfile } from '@/context/user-context';
 import { IUserProfile } from '@/interfaces/user';
 
@@ -11,7 +11,7 @@ import AvatarProfile from '@/components/avatar/avatar-profile';
 
 import { EditForm, HeaderEdit } from '../profile-edit-components';
 import { AvatarUpdateDialog } from '@/components/avatar';
-import { uploadImage } from '@/apis/media';
+import { uploadFile } from '@/apis/media';
 import { USER_AVATAR_PLACEHOLDER } from '@/constant';
 
 //----------------------------------------------------------------
@@ -23,7 +23,7 @@ export default function ProfileEditView() {
     fullname: userProfile?.fullname || '',
     username: userProfile?.username || '',
     bio: userProfile?.bio || '',
-    websiteUrl: userProfile?.websiteUrl || '',
+    // websiteUrl: userProfile?.websiteUrl || '',
   });
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
@@ -54,15 +54,15 @@ export default function ProfileEditView() {
           throw new Error('File size is too large');
         }
 
-        const response = await uploadImage(file);
-        const newAvatarUrl = response.data.url;
+        const response = await uploadFile(file);
+        // Update user profile
+        const updateResponse = await updateUserAvatar({
+          avatarId: response.data.id,
+        });
+        const updatedProfile = updateResponse.data;
 
-        await updateUserProfile({ avatarId: newAvatarUrl });
-
-        setUserProfile({
-          ...userProfile,
-          cover: newAvatarUrl,
-        } as IUserProfile);
+        // Update context with full profile
+        setUserProfile(updatedProfile);
       } catch (error) {
         console.error('Upload failed:', error);
       }

@@ -2,6 +2,7 @@ import Image from 'next/image';
 import React from 'react';
 
 import { createPost } from '@/apis/post';
+import { uploadFile } from '@/apis/media';
 import { usePost } from '@/context/post-context';
 import { useUserProfile } from '@/context/user-context';
 import { createPostSchema } from '@/schema/posts-schema';
@@ -15,15 +16,13 @@ import { Typography } from '@/components/typography';
 import { Button } from '../button';
 import { DebouncedInput } from '../input';
 
-//----------------------------------------------------------------------------------
-
 interface INewPostProps {
   onBack?: () => void;
 }
 
 export default function NewPost({ onBack }: INewPostProps) {
   const [previewUrl, setPreviewUrl] = React.useState('');
-  const [uploadedImage, setUploadedImage] = React.useState('');
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -37,9 +36,16 @@ export default function NewPost({ onBack }: INewPostProps) {
     try {
       setIsSubmitting(true);
 
+      let photoId: string | null = null;
+      if (selectedFile) {
+        setIsUploading(true);
+        const uploadResponse = await uploadFile(selectedFile);
+        photoId = uploadResponse.data.id;
+      }
+
       const postData = {
         content: content.trim(),
-        image: uploadedImage || null,
+        photoId,
       };
 
       const validatedData = createPostSchema.parse(postData);
@@ -47,9 +53,10 @@ export default function NewPost({ onBack }: INewPostProps) {
       const posts = await createPost(validatedData);
       addPost(posts.data);
 
+      // Reset form
       setContent('');
       setPreviewUrl('');
-      setUploadedImage('');
+      setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -57,14 +64,14 @@ export default function NewPost({ onBack }: INewPostProps) {
       console.error('Failed to create post:', error);
     } finally {
       setIsSubmitting(false);
-
+      setIsUploading(false);
       if (onBack) onBack();
     }
   };
 
   const handleRemoveImage = () => {
     setPreviewUrl('');
-    setUploadedImage('');
+    setSelectedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -151,16 +158,12 @@ export default function NewPost({ onBack }: INewPostProps) {
           </div>
 
           <div className="fixed bottom-4 w-fit mx-auto rounded-[1.25rem] p-2 flex gap-2 items-center bg-neutral2-3 z-20 md:p-3 md:w-full md:bg-transparent md:relative md:mx-0 md:justify-between md:bottom-0">
-            {/* <EmojiButton /> */}
-
             <UploadImgButton
               fileInputRef={fileInputRef}
               setPreviewUrl={setPreviewUrl}
-              setUploadedImage={setUploadedImage}
+              setSelectedFile={setSelectedFile}
               setIsUploading={setIsUploading}
             />
-
-            {/* <TagButton /> */}
 
             <Button
               disabled={!content.trim() || isUploading || isSubmitting}

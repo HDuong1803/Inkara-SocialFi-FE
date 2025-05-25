@@ -1,6 +1,5 @@
 import axiosInstance from '@/utils/axios';
 import { endpoints } from '@/utils/axios';
-import { InputPagination } from './dto/pagination.dto';
 import { IApiResponse } from '@/interfaces/api-response';
 import { FilterByOption, FilterParams, IMintNft, INftItem, PaginationParams, SearchParams, SortParams } from '@/interfaces/nft';
 import { OutputContract } from '@/interfaces/transaction';
@@ -35,9 +34,9 @@ import { OutputContract } from '@/interfaces/transaction';
 // };
 
 export const getNftDetail = async (
-  slug: string
+  id: string
 ): Promise<IApiResponse<INftItem>> => {
-  const response = await axiosInstance.get(endpoints.nft.getNftById(slug));
+  const response = await axiosInstance.get(endpoints.nft.getNftById(id));
   return response.data;
 };
 
@@ -53,19 +52,23 @@ export const mintNft = async (
 };
 
 export const getNftByUser = async (
-  { startId, offset, limit }: InputPagination,
-  creatorId: string
+  creatorId: string,
+  sortParams: SortParams = { sortBy: undefined, sortAscending: undefined },
+  searchParams: SearchParams = { contains: undefined },
+  filterParams: FilterParams = { filterBy: FilterByOption.ERC721_NFTS },
+  paginationParams: PaginationParams = { offset: 1, limit: 10, startId: 0 }
 ): Promise<IApiResponse<INftItem[]>> => {
-  const pagination = {
-    startId,
-    offset,
-    limit,
-  };
   const response = await axiosInstance.get<IApiResponse<INftItem[]>>(
     endpoints.nft.getNftByUser(creatorId), {
     params: {
-      ...pagination,
-    },
+      sortBy: sortParams.sortBy,
+      sortAscending: sortParams.sortAscending,
+      contains: searchParams.contains,
+      filterBy: filterParams.filterBy,
+      offset: paginationParams.offset,
+      limit: paginationParams.limit,
+      startId: paginationParams.startId
+    }
   }
   );
   return response.data;

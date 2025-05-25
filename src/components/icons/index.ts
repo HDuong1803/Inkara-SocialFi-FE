@@ -57,6 +57,7 @@ export { default as Sunrise } from './sunrise';
 export { default as Loader } from './loader';
 export { default as Sun } from './sun';
 export { default as TextSize } from './text-size';
+export { default as TipIcon } from './tip-token';
 export { default as Palette } from './palette';
 export { default as Play } from './play';
 export { default as Pictures } from './pictures';

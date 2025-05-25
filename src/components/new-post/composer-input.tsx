@@ -10,22 +10,21 @@ import { useUserProfile } from '@/context/user-context';
 import { createPostSchema } from '@/schema/posts-schema';
 
 import { Avatar } from '@/components/avatar';
-import { UploadImgButton } from '@/components/new-post/post-control';
+import { EmojiButton, UploadImgButton } from '@/components/new-post/post-control';
 import { Typography } from '@/components/typography';
 
 import { cn } from '@/lib';
 
 import { Button } from '../button';
 import { CloseIcon } from '../icons';
-
-//----------------------------------------------------------------------------------
+import { uploadFile } from '@/apis/media';
 
 interface PostContentProps {
   usedBy: 'post' | 'reply';
   className?: string;
   onCreated?: (isCreate: boolean) => void;
   postId?: string;
-  parentComment?: { id: string; fullname: string, username: string };
+  parentComment?: { id: string; fullname: string; username: string };
 }
 
 export default function ComposerInput({
@@ -40,7 +39,7 @@ export default function ComposerInput({
   const [isInputFocused, setInputFocused] = React.useState<boolean>(false);
 
   const [previewUrl, setPreviewUrl] = React.useState<string>('');
-  const [uploadedImage, setUploadedImage] = React.useState<string>('');
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [isUploading, setIsUploading] = React.useState<boolean>(false);
 
   const [content, setContent] = React.useState<string>('');
@@ -52,19 +51,22 @@ export default function ComposerInput({
     try {
       setIsSubmitting(true);
 
+      let photoId: string | null = null;
+      if (selectedFile) {
+        setIsUploading(true);
+        const uploadResponse = await uploadFile(selectedFile);
+        photoId = uploadResponse.data.id;
+        setIsUploading(false);
+      }
+
       const postData = {
-        content: content.trim(),
-        image: uploadedImage || null,
+        content,
+        photoId,
       };
 
       const validatedData = createPostSchema.parse(postData);
 
-      if (usedBy !== 'post') {
-        setContent('');
-        setInputFocused(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
+      if (usedBy === 'reply') {
         const commentData = {
           parentId: parentComment?.id ?? null,
           content: validatedData.content,
@@ -74,6 +76,13 @@ export default function ComposerInput({
           postId as string,
           parentComment?.id ? commentData : { ...commentData, parentId: null }
         );
+        setContent('');
+        setPreviewUrl('');
+        setSelectedFile(null);
+        setInputFocused(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
         onCreated?.(true);
         return;
       }
@@ -83,7 +92,7 @@ export default function ComposerInput({
 
       setContent('');
       setPreviewUrl('');
-      setUploadedImage('');
+      setSelectedFile(null);
       setInputFocused(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -92,12 +101,13 @@ export default function ComposerInput({
       console.error('Failed to create post:', error);
     } finally {
       setIsSubmitting(false);
+      setIsUploading(false);
     }
   };
 
   const handleRemoveImage = () => {
     setPreviewUrl('');
-    setUploadedImage('');
+    setSelectedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -117,12 +127,18 @@ export default function ComposerInput({
   return (
     <div
       className={cn(
-        `w-full flex gap-3 h-[64px] z-10 overflow-hidden items-center justify-between p-3 absolute left-0 bottom-0 rounded-[1.25rem] ${isInputFocused ? ' h-fit flex-col justify-start bg-neutral3-70 hover:bg-neutral2-5' : 'flex-row bg-neutral2-2'} transition-all duration-[0.2s]`,
+        `w-full flex gap-3 h-[64px] z-10 overflow-hidden items-center justify-between p-3 absolute left-0 bottom-0 rounded-[1.25rem] ${
+          isInputFocused
+            ? 'h-fit flex-col justify-start bg-neutral3-70 hover:bg-neutral2-5'
+            : 'flex-row bg-neutral2-2'
+        } transition-all duration-[0.2s]`,
         className
       )}
     >
       <div
-        className={`w-full flex justify-between items-start gap-3 grow ${isInputFocused ? 'items-start' : 'items-center'}`}
+        className={`w-full flex justify-between items-start gap-3 grow ${
+          isInputFocused ? 'items-start' : 'items-center'
+        }`}
       >
         <Avatar
           className="rounded-full"
@@ -139,7 +155,9 @@ export default function ComposerInput({
             placeholder={
               usedBy === 'post' ? 'Start a post...' : 'Post your reply...'
             }
-            className={`min-w-full p-0 text-left min-h-fit max-h-fit !bg-transparent text-tertiary placeholder:text-tertiary grow opacity-50 focus:outline-none focus:bg-transparent focus:opacity-100 ${isInputFocused ? 'pt-[0px]' : ' pt-[30px]'}`}
+            className={`min-w-full p-0 text-left min-h-fit max-h-fit !bg-transparent text-tertiary placeholder:text-tertiary grow opacity-50 focus:outline-none focus:bg-transparent focus:opacity-100 ${
+              isInputFocused ? 'pt-[0px]' : 'pt-[30px]'
+            }`}
             onFocus={() => setInputFocused(true)}
           />
           {previewUrl && (
@@ -176,12 +194,11 @@ export default function ComposerInput({
       >
         {isInputFocused && usedBy === 'post' ? (
           <div id="tool-reply" className="flex gap-1 items-center mt-3">
-            {/* <EmojiButton /> */}
-
+            <EmojiButton />
             <UploadImgButton
               fileInputRef={fileInputRef}
               setPreviewUrl={setPreviewUrl}
-              setUploadedImage={setUploadedImage}
+              setSelectedFile={setSelectedFile}
               setIsUploading={setIsUploading}
             />
           </div>
@@ -190,7 +207,9 @@ export default function ComposerInput({
         )}
 
         <Button
-          disabled={!content.trim() || isUploading || isSubmitting}
+          disabled={
+            (!content.trim() && !selectedFile) || isUploading || isSubmitting
+          }
           className="px-[1.5rem] py-[0.75rem] ml-auto"
           onClick={handleSubmit}
           child={
@@ -198,8 +217,8 @@ export default function ComposerInput({
               {isSubmitting
                 ? 'Posting...'
                 : usedBy === 'post'
-                  ? 'Post'
-                  : 'Reply'}
+                ? 'Post'
+                : 'Reply'}
             </Typography>
           }
         />

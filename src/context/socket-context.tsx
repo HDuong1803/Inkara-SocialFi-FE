@@ -31,7 +31,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     socket.on('connect', () => {
       console.log('Connected to WebSocket');
-      socket.emit('conversation:all');
     });
     socket.on('disconnect', (reason) => {
       console.log('Disconnected from WebSocket:', reason);
@@ -40,14 +39,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.error('WebSocket connection error:', err.message);
       toast.error(`WebSocket error: ${err.message}`);
     });
-    socket.on('room:all', (rooms: IRoom[]) => {
-      console.log('Received rooms:', rooms);
-      setRooms(rooms);
-    });
-    socket.on('conversation:all', (conversations: IConversation[]) => {
-      console.log('Received conversations:', conversations);
-      setConversations(conversations);
-    });
+    // socket.on('room:all', (rooms: IRoom[]) => {
+    //   console.log('Received rooms:', rooms);
+    //   setRooms(rooms);
+    // });
+    // socket.on('conversation:all', (conversations: IConversation[]) => {
+    //   console.log('Received conversations:', conversations);
+    //   setConversations(conversations);
+    // });
     socket.on('error', (error: { event: string; message: string }) => {
       console.error(`Error in ${error.event}: ${error.message}`);
       toast.error(`Socket error: ${error.message}`);

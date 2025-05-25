@@ -23,7 +23,7 @@ export default function MessageItem({ message }: IMessageItemProps) {
             level="base2m"
             className="text-primary opacity-80 flex items-center gap-2"
           >
-            {message.author.fullname}
+            {message?.author?.fullname || 'Anonymous User'}
             <Typography level="captionr" className="text-tertiary opacity-50">
               {new Date(message.createdAt).toLocaleDateString('vi-VN', {
                 hour: 'numeric',

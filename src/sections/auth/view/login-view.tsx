@@ -46,7 +46,7 @@ export default function LoginView() {
     // Retrieve the wallet address using the Wallet Client
     const [address] = await walletClient.requestAddresses();
     try {
-      const { data: nonce } = await register({ address });
+      const { data: nonce } = await register({ address: address.toLowerCase() });
       const messageHash = web3.utils.soliditySha3(
         address,
         nonce.toString()
@@ -71,7 +71,7 @@ export default function LoginView() {
         }
       });
 
-      const response = await login({ address, signature });
+      const response = await login({ address: address.toLowerCase(), signature });
       setToken(response.accessToken);
       router.push('/');
     } catch (err: any) {

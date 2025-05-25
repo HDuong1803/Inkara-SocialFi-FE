@@ -98,100 +98,107 @@ export const fetcher = async (args: string | [string, AxiosRequestConfig]) => {
 
 export const endpoints = {
   auth: {
-    login: `/auth/signin`,
-    register: `/auth/signup`,
-    logout: `/auth/signout`,
-    refresh: `/auth/refresh`
+    login: `/api/auth/signin`,
+    register: `/api/auth/signup`,
+    logout: `/api/auth/signout`,
+    refresh: `/api/auth/refresh`
   },
 
   user: {
-    me: `/user/me`,
-    list: `/user/list`,
-    create: `/profile/`,
-    update: `/user/update-profile`,
+    me: `/api/user/me`,
+    list: `/api/user/list`,
+    create: `/api/profile/`,
+    update: `/api/user/update-profile`,
     profile: (id: string) => `user/${id}`,
-    profileById: (id: string) => `/user/${id}`,
+    profileById: (id: string) => `/api/user/${id}`,
+    updateAvatar: `/api/user/update-avatar`,
   },
 
   follow: {
-    hasFollowed: (id: string) => `/follow/check/${id}`,
-    followAction: (followingId: string) => `/follow/${followingId}`,
-    listFollows: `/follow/list`,
-    whoToFollow: `/follow/who-to-follow`,
-    countFollows: (id: string) => `/follow/${id}/count`,
+    hasFollowed: (id: string) => `/api/follow/check/${id}`,
+    followAction: (followingId: string) => `/api/follow/${followingId}`,
+    listFollows: `/api/follow/list`,
+    whoToFollow: `/api/follow/who-to-follow`,
+    countFollows: (id: string) => `/api/follow/${id}/count`,
   },
 
   post: {
-    getById: (id: string) => `/post/${id}`,
-    getMany: `/post`,
-    getManyByUser: (id: string) => `/post/user/${id}`,
-    create: `/post`,
-    update: (id: string) => `/post/${id}`,
-    delete: (id: string) => `/post/${id}`,
-    detail: `/post/:id`,
-    countPosts: (id: string) => `/post/${id}/count`,
+    getById: (id: string) => `/api/post/${id}`,
+    getMany: `/api/post`,
+    getManyByUser: (id: string) => `/api/post/user/${id}`,
+    create: `/api/post`,
+    update: (id: string) => `/api/post/${id}`,
+    delete: (id: string) => `/api/post/${id}`,
+    detail: `/api/post/:id`,
+    countPosts: (id: string) => `/api/post/${id}/count`,
   },
   media: {
-    upload: `/upload-file`,
+    upload: `/api/file`,
   },
 
   notification: {
-    get: `/notification`,
-    read: (id: string) => `/notifications/${id}/read`,
-    readAll: `/notifications/read-all`,
+    get: `/api/notification`,
+    read: (id: string) => `/api/notifications/${id}/read`,
+    readAll: `/api/notifications/read-all`,
   },
 
   comment: {
-    get: `/comment`,
-    create: (id: string) => `/comment/${id}`,
-    update: (id: string) => `/comment/comment/${id}`,
-    delete: (id: string) => `/comment/comment/${id}`,
+    get: `/api/comment`,
+    create: (id: string) => `/api/comment/${id}`,
+    update: (id: string) => `/api/comment/comment/${id}`,
+    delete: (id: string) => `/api/comment/comment/${id}`,
   },
 
   like: {
-    likeAction: `/like`,
-    hasLiked: (id: string) => `/like/check/${id}`,
+    likeAction: `/api/like`,
+    hasLiked: (id: string) => `/api/like/check/${id}`,
   },
 
   message: {
-    getMessageRoom: (id: string) => `/message/${id}`,
-    createMessageRoom: (id: string) => `/message/${id}`,
-    getMessageConversation: (conversationId: string) => `/message/conversation/${conversationId}`,
+    getMessageRoom: (id: string) => `/api/message/${id}`,
+    createMessageRoom: (id: string) => `/api/message/${id}`,
+    getMessageConversation: (conversationId: string) => `/api/message/conversation/${conversationId}`,
   },
 
   conversation: {
-    get: `/conversation`,
-    create: `/conversation`,
-    getById: (id: string) => `/conversation/${id}`,
-    getMyConversation: `/conversation/my-conversation`,
+    get: `/api/conversation`,
+    create: `/api/conversation`,
+    getById: (id: string) => `/api/conversation/${id}`,
+    getMyConversation: `/api/conversation/my-conversation`,
   },
 
   room: {
-    getInvitation: `/room/invitation`,
-    getInvitations: `/room/invitations`,
-    invite: (id: string) => `/room/invite/${id}`,
-    getMany: `/room`,
-    getById: (id: string) => `/room/${id}`,
-    getMyRooms: `/room/my-rooms`,
-    create: `/room`,
-    addUser: (id: string) => `/room/add-user/${id}`,
-    removeUser: (id: string) => `/room/remove-user/${id}`,
+    getInvitation: `/api/room/invitation`,
+    getInvitations: `/api/room/invitations`,
+    invite: (id: string) => `/api/room/invite/${id}`,
+    getMany: `/api/room`,
+    getById: (id: string) => `/api/room/${id}`,
+    getMyRooms: `/api/room/my-rooms`,
+    create: `/api/room`,
+    addUser: (id: string) => `/api/room/add-user/${id}`,
+    removeUser: (id: string) => `/api/room/remove-user/${id}`,
   },
   
   event: {
-    getMany: `/event/list`,
-    getById: (id: string) => `/event/${id}`,
-    requestEvent: `/event/request-event-creation`,
-    voteEvent: `/event/vote-for-event`,
-    update: (id: string) => `/event/${id}`,
-    delete: (id: string) => `/event/${id}`,
-    hasVoted: (id: string) => `/event/check-voted-event/${id}`,
+    getMany: `/api/event/list`,
+    getById: (id: string) => `/api/event/${id}`,
+    requestEvent: `/api/event/request-event-creation`,
+    voteEvent: `/api/event/vote-for-event`,
+    update: (id: string) => `/api/event/${id}`,
+    delete: (id: string) => `/api/event/${id}`,
+    hasVoted: (id: string) => `/api/event/check-voted-event/${id}`,
   },
 
   nft: {
-    getMyNfts: `/nft/me`,
-    getNftByUser: (id: string) => `/nft/user/${id}`,
-    getNftById: (slug: string) => `/nft/${slug}`,
-    mintNft: `/nft/mint`
+    getMyNfts: `/api/nft/me`,
+    getNftByUser: (id: string) => `/api/nft/user/${id}`,
+    getNftById: (id: string) => `/api/nft/${id}`,
+    mintNft: `/api/nft/mint`
+  },
+
+  listing: {
+    getAllListings: `/api/listing/list`,
+    getMyListings: `/api/listing/user`,
+    getListingById: (id: string) => `/api/listing/${id}`,
   }
 };

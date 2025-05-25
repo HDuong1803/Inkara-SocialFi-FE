@@ -74,7 +74,7 @@ export default function InfoUser({ user }: UserInfoProps) {
         <Image
           width={1280}
           height={180}
-          src={'/img/default-cover.jpg'}
+          src={'/img/default-cover.png'}
           className="max-h-[11.25rem] w-full object-cover"
           alt="cover"
         />

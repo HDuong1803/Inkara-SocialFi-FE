@@ -19,12 +19,15 @@ export interface INftItem {
     tokenUri: string;
     name: string;
     image: string;
-    attributes: Record<string, unknown>;
+    network: string;
+    attributes: Array<IAttribute>;
     royalty: number;
-    slug: string;
     transactionHash: string;
     nftType: string;
     nftStatus: string;
+    tokenType?: string;
+    chain?: string;
+    viewCount?: number;
     createdAt: string;
     updatedAt: string;
     collection?: {
@@ -33,15 +36,60 @@ export interface INftItem {
         // Add other collection fields as needed
     };
     listing?: Array<{
-        id: string;
-        price: number;
+        id?: string;
+        saleId?: string;
+        auctionId?: string;
+        price: string;
         createAt: string;
         endTime: string;
+        nftId?: string;
+        status?: string;
+        sellerId?: string;
     }>;
     offers?: Array<{
         id: string;
+        nftId: string;
+        userOfferId: string;
+        saleId?: string | null;
+        auctionId?: string | null;
         offerPrice: number;
+        status: string;
+        createdAt: string;
     }>;
+    owner?: {
+        id: string;
+        username: string;
+        address: string;
+        photo: {
+            url: string;
+        };
+    },
+    activities?: INftActivity[];
+}
+
+export interface INftActivity {
+    id: string;
+    nftId: string;
+    fromAddress?: string;
+    fromId?: string;
+    toAddress?: string | null;
+    toId?: string | null;
+    offerId?: string | null;
+    price?: number | null;
+    actionType: string;
+    txHash: string;
+    createdAt: string;
+    updatedAt: string;
+    from?: {
+        id: string;
+        username: string;
+        address: string;
+    }
+    to?: {
+        id: string;
+        username: string;
+        address: string;
+    }
 }
 
 export interface IApiResponse<T> {

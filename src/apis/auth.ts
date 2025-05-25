@@ -37,6 +37,7 @@ export const register = async (
 
 export const logout = async (): Promise<IApiResponse<string>> => {
   const response = await axiosInstance.post(endpoints.auth.logout);
+  localStorage.removeItem(AUTH_TOKEN);
   return response.data;
 };
 

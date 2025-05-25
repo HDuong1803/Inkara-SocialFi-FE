@@ -15,6 +15,7 @@ import { Typography } from '@/components/typography';
 
 import { Button } from '../button';
 import { DebouncedInput } from '../input';
+import { uploadFile } from '@/apis/media';
 
 //-------------------------------------------------------------------------
 
@@ -30,7 +31,7 @@ export default function UpdatePost({
   onUpdateSuccess,
 }: IUpdatePostProps) {
   const [previewUrl, setPreviewUrl] = React.useState('');
-  const [uploadedImage, setUploadedImage] = React.useState('');
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -49,7 +50,6 @@ export default function UpdatePost({
       setContent(post.content);
       if (post.photo?.url) {
         setPreviewUrl(post.photo?.url);
-        setUploadedImage(post.photo?.id || '');
       }
     }
   }, [post]);
@@ -60,9 +60,16 @@ export default function UpdatePost({
     try {
       setIsSubmitting(true);
 
+      let photoId: string | null = null;
+      if (selectedFile) {
+        setIsUploading(true);
+        const uploadResponse = await uploadFile(selectedFile);
+        photoId = uploadResponse.data.id;
+      }
+
       const postData: UpdatePost = {
         content: content.trim(),
-        photoId: uploadedImage || '',
+        photoId,
       };
 
       const validatedData = updatePostSchema.parse(postData);
@@ -95,7 +102,7 @@ export default function UpdatePost({
 
   const handleRemoveImage = () => {
     setPreviewUrl('');
-    setUploadedImage('');
+    setSelectedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -132,8 +139,7 @@ export default function UpdatePost({
                 size={44}
                 className="max-h-[44px]"
                 alt="avatar"
-                src={userProfile?.photo.url
-                }
+                src={userProfile?.photo.url}
               />
               <div className="grow">
                 <DebouncedInput
@@ -189,7 +195,7 @@ export default function UpdatePost({
             <UploadImgButton
               fileInputRef={fileInputRef}
               setPreviewUrl={setPreviewUrl}
-              setUploadedImage={setUploadedImage}
+              setSelectedFile={setSelectedFile}
               setIsUploading={setIsUploading}
             />
 

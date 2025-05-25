@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 //--------------------------------------------------------------------------------------------------------
 
 interface ReactItemProps {
-  value: number;
+  value?: number;
   icon: React.ReactNode;
   className?: string;
   onClick?: () => void;

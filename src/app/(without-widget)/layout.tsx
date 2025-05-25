@@ -1,7 +1,6 @@
 'use client';
 
 import ProtectedRoute from '@/components/protected-router';
-import { PostProvider } from '@/context/post-context';
 import { ProfileProvider } from '@/context/user-context';
 import useBreakPoint from '@/hooks/use-breakpoint';
 import BottomNavigationBar from '@/layouts/bottom-navigation-bar';
@@ -48,15 +47,13 @@ export default function MainLayout({ children }: Props) {
             >
               <ProfileProvider>
                 <SocketProvider>
-                  <PostProvider>
-                    {isMouted && (
-                      <div className="h-screen w-screen bg-cushion block md:flex relative">
-                        {isSmallScreen || <Sidebar className="bg-surface-3" />}
-                        <Main>{children}</Main>
-                        {isSmallScreen && <BottomNavigationBar />}
-                      </div>
-                    )}
-                  </PostProvider>
+                  {isMouted && (
+                    <div className="h-screen w-screen bg-cushion block md:flex relative">
+                      {isSmallScreen || <Sidebar className="bg-surface-3" />}
+                      <Main>{children}</Main>
+                      {isSmallScreen && <BottomNavigationBar />}
+                    </div>
+                  )}
                 </SocketProvider>
               </ProfileProvider>
             </SWRConfig>
