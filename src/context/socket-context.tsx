@@ -43,10 +43,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     //   console.log('Received rooms:', rooms);
     //   setRooms(rooms);
     // });
-    // socket.on('conversation:all', (conversations: IConversation[]) => {
-    //   console.log('Received conversations:', conversations);
-    //   setConversations(conversations);
-    // });
+    socket.on('conversation:all', (conversations: IConversation[]) => {
+      console.log('Received conversations:', conversations);
+      setConversations(conversations);
+    });
     socket.on('error', (error: { event: string; message: string }) => {
       console.error(`Error in ${error.event}: ${error.message}`);
       toast.error(`Socket error: ${error.message}`);

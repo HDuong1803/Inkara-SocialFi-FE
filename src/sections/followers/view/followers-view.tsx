@@ -125,14 +125,14 @@ export default function FollowersView() {
                 <ProfileCard
                   user={{
                     id: follower.id,
-                    fullname: follower.following.fullname,
-                    username: follower.following.username,
+                    fullname: follower?.following?.fullname,
+                    username: follower?.following?.username,
                     photo: {
                       url:
-                        follower.following.photo?.url ||
+                        follower?.following?.photo?.url ||
                         USER_AVATAR_PLACEHOLDER,
                     },
-                    address: follower.following.address,
+                    address: follower?.following?.address,
                   }}
                   types="follower"
                   onFollow={() => handleFollow(follower.id)}

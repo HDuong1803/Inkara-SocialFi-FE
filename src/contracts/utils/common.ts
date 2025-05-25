@@ -22,5 +22,5 @@ export type AddressType  = {
     NFT: {80002: '0x32e2c8069999819576385cd43be43f3b95631692'},
     Marketplace: {80002: '0x631ab9909c7a7b86253e8bae9e96d0376a6fa454'}, 
     Auction: {80002: '0x9973c3431a17aa2f2c60dafe6eda7dd67f469377'},
-    NftContest: {80002: '0x3f285a09d2e2b123395a0476554db02791e00299'}
+    NftContest: {80002: '0x760db223356f5ea6578654662a0cea1365d4adf7'}
   }
