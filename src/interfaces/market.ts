@@ -65,4 +65,10 @@ export enum actionType {
     LISTED_FOR_AUCTION = "Listed for Auction",
     SOLD = "Sold NFT",
     UNLISTED = "Unlisted NFT",
+    TRANSFERRED = "Transferred NFT",
+    CREATED_OFFER = "Created Offer",
+    CANCELED_OFFER = "Canceled Offer",
+    ACCEPTED_OFFER = "Accepted Offer",
+    REJECTED_OFFER = "Rejected Offer",
+    PLACE_BID = "Place Bid"
 }
