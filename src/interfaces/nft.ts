@@ -136,5 +136,3 @@ export interface PaginationParams {
     limit?: number;
     startId?: number;
 }
-
-export type ActionType = "LIST" | "UNLIST" | "AUCTION";

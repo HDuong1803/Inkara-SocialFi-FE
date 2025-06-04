@@ -7,7 +7,7 @@ import { uploadFile } from '@/apis/media';
 import { useUserProfile } from '@/context/user-context';
 
 import { Avatar } from '@/components/avatar';
-import { ArrowBackIcon, CloseIcon } from '@/components/icons';
+import { CloseIcon } from '@/components/icons';
 import { UploadImgButton } from '@/components/new-post/post-control';
 import { Typography } from '@/components/typography';
 import { Button } from '../button';
@@ -160,186 +160,164 @@ export default function NewNft({ onBack }: INewNftProps) {
 
   return (
     <section>
-      <div className="fixed w-full h-full top-0 left-0 bg-[#444444] z-20 md:bg-[#12121299] shadow-stack">
-        <div className="hidden md:block absolute top-4 right-4 z-20">
-          <Button
-            className="size-10 p-2.5 bg-neutral2-3 rounded-full"
-            child={<CloseIcon />}
-            onClick={onBack}
-            aria-label="Close form"
-          />
-        </div>
-        <div className="w-full h-full relative bg-[#1a1a1ab3] backdrop-blur-[50px] border border-[#ffffff1a] md:mx-auto md:w-[40rem] md:max-w-[90vw] md:min-h-[60vh] md:max-h-[85vh] md:mt-[5%] md:rounded-2xl">
-          <div className="md:hidden w-full flex items-center justify-between p-4 bg-neutral2-3">
+      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md z-50 flex items-center justify-center">
+        <div className="w-full h-full md:w-[40rem] md:max-w-[90vw] md:min-h-[60vh] md:max-h-[85vh] md:rounded-2xl bg-[#1a1a1ab3] backdrop-blur-[50px] border border-[#ffffff1a] overflow-y-auto">
+          <div className="w-full flex items-center justify-between p-4 bg-[#1a1a1ab3] backdrop-blur-[50px] sticky top-0 z-10">
+            <Typography level="h3" className="text-white">
+              Create Your NFT
+            </Typography>
             <Button
-              className="size-10 p-2.5"
-              child={<ArrowBackIcon />}
+              className="size-10 p-2.5 bg-neutral2-5 rounded-full"
+              child={<CloseIcon />}
               onClick={onBack}
-              aria-label="Go back"
-            />
-            <Button
-              className="px-6 py-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white"
-              child={<Typography level="base2sm">Mint NFT</Typography>}
-              onClick={handleMintNft}
-              disabled={
-                !selectedFile || !name.trim() || isUploading || isSubmitting
-              }
-              aria-label="Mint NFT"
+              aria-label="Close form"
             />
           </div>
 
-          <div className="w-full h-full flex flex-col md:rounded-2xl overflow-y-auto ">
-            <div className="w-full p-4 sm:p-6 space-y-6">
-              <div>
-                <Typography level="h3" className="text-white mb-2">
-                  Create Your NFT
-                </Typography>
-                <Typography level="baser" className="text-gray-400">
-                  Mint a unique NFT by uploading an image and defining its
-                  details.
-                </Typography>
-              </div>
+          <div className="w-full p-4 sm:p-6 space-y-6">
+            <Typography level="baser" className="text-gray-400">
+              Mint a unique NFT by uploading an image and defining its details.
+            </Typography>
 
-              <div className="flex items-start gap-4">
-                <Avatar
-                  size={44}
-                  className="max-h-[44px] rounded-full"
-                  alt="User avatar"
-                  src={userProfile?.photo?.url}
-                />
-                <div className="flex-1 space-y-4">
-                  {/* Name */}
-                  <div>
-                    <Typography level="baser" className="text-gray-200 mb-1">
-                      NFT Name *
-                    </Typography>
-                    <DebouncedInput
-                      type="text"
-                      placeholder="Enter NFT name"
-                      value={name}
-                      onChange={(value: string) => setName(value)}
-                      className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
-                      aria-label="NFT name"
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <Typography level="baser" className="text-gray-200 mb-1">
-                      Description
-                    </Typography>
-                    <DebouncedInput
-                      type="textarea"
-                      placeholder="Describe your NFT"
-                      value={description}
-                      onChange={(value: string) => setDescription(value)}
-                      className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
-                      aria-label="NFT description"
-                    />
-                  </div>
-
-                  {/* Royalty Fee */}
-                  <div>
-                    <Typography level="baser" className="text-gray-200 mb-1">
-                      Royalty Fee (%)
-                    </Typography>
-                    <DebouncedInput
-                      type="number"
-                      placeholder="Enter royalty fee (e.g., 5 for 5%)"
-                      value={feeNumerator}
-                      onChange={(value: string) => setFeeNumerator(value)}
-                      className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
-                      min="0"
-                      max="1000"
-                      aria-label="Royalty fee"
-                    />
-                    <Typography level="small" className="text-gray-500 mt-1">
-                      Max 10% (1000 basis points)
-                    </Typography>
-                  </div>
-
-                  {/* Attributes */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <Typography level="baser" className="text-gray-200">
-                        Attributes
-                      </Typography>
-                      <Button
-                        className="px-4 py-2 rounded-lg bg-neutral2-5 text-white hover:bg-neutral2-10"
-                        child={
-                          <Typography level="baser">Add Attribute</Typography>
-                        }
-                        onClick={handleAddAttribute}
-                      />
-                    </div>
-                    <div className="max-h-[20rem] overflow-y-auto pr-2">
-                      {attributes.map((attr, index) => (
-                        <div
-                          key={index}
-                          className="flex gap-2 mb-3 sm:flex-row flex-col"
-                        >
-                          <DebouncedInput
-                            type="text"
-                            placeholder="Trait Type (e.g., Color)"
-                            value={attr.trait_type}
-                            onChange={(value: string) =>
-                              handleUpdateAttribute(index, 'trait_type', value)
-                            }
-                            className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
-                            aria-label={`Trait type ${index + 1}`}
-                          />
-                          <DebouncedInput
-                            type="text"
-                            placeholder="Value (e.g., Blue)"
-                            value={attr.value}
-                            onChange={(value: string) =>
-                              handleUpdateAttribute(index, 'value', value)
-                            }
-                            className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
-                            aria-label={`Trait value ${index + 1}`}
-                          />
-                          <Button
-                            className="p-3 bg-red-500 rounded-lg sm:self-start"
-                            child={<CloseIcon />}
-                            onClick={() => handleRemoveAttribute(index)}
-                            aria-label={`Remove attribute ${index + 1}`}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Image Preview */}
-                  {previewUrl && (
-                    <div className="relative mt-4 rounded-lg overflow-hidden group">
-                      <div className="relative bg-neutral2-1 p-2 rounded-lg">
-                        <Image
-                          src={previewUrl}
-                          alt="NFT Preview"
-                          className="w-full h-48 sm:h-64 object-cover rounded"
-                          width={300}
-                          height={200}
-                        />
-                        {isUploading && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded">
-                            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          </div>
-                        )}
-                        <button
-                          onClick={handleRemoveImage}
-                          className="absolute top-4 right-4 p-1 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition-opacity opacity-0 group-hover:opacity-100"
-                          disabled={isUploading}
-                        >
-                          <CloseIcon />
-                        </button>
-                      </div>
-                    </div>
-                  )}
+            <div className="flex items-start gap-4">
+              <Avatar
+                size={44}
+                className="max-h-[44px] rounded-full"
+                alt="User avatar"
+                src={userProfile?.photo?.url}
+              />
+              <div className="flex-1 space-y-4">
+                {/* Name */}
+                <div>
+                  <Typography level="baser" className="text-gray-200 mb-1">
+                    NFT Name *
+                  </Typography>
+                  <DebouncedInput
+                    type="text"
+                    placeholder="Enter NFT name"
+                    value={name}
+                    onChange={(value: string) => setName(value)}
+                    className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
+                    aria-label="NFT name"
+                  />
                 </div>
+
+                {/* Description */}
+                <div>
+                  <Typography level="baser" className="text-gray-200 mb-1">
+                    Description
+                  </Typography>
+                  <DebouncedInput
+                    type="textarea"
+                    placeholder="Describe your NFT"
+                    value={description}
+                    onChange={(value: string) => setDescription(value)}
+                    className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
+                    aria-label="NFT description"
+                  />
+                </div>
+
+                {/* Royalty Fee */}
+                <div>
+                  <Typography level="baser" className="text-gray-200 mb-1">
+                    Royalty Fee (%)
+                  </Typography>
+                  <DebouncedInput
+                    type="number"
+                    placeholder="Enter royalty fee (e.g., 5 for 5%)"
+                    value={feeNumerator}
+                    onChange={(value: string) => setFeeNumerator(value)}
+                    className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
+                    min="0"
+                    max="1000"
+                    aria-label="Royalty fee"
+                  />
+                  <Typography level="small" className="text-gray-500 mt-1">
+                    Max 10% (1000 basis points)
+                  </Typography>
+                </div>
+
+                {/* Attributes */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <Typography level="baser" className="text-gray-200">
+                      Attributes
+                    </Typography>
+                    <Button
+                      className="px-4 py-2 rounded-lg bg-neutral2-5 text-white hover:bg-neutral2-10"
+                      child={
+                        <Typography level="baser">Add Attribute</Typography>
+                      }
+                      onClick={handleAddAttribute}
+                    />
+                  </div>
+                  <div className="max-h-[20rem] overflow-y-auto pr-2">
+                    {attributes.map((attr, index) => (
+                      <div
+                        key={index}
+                        className="flex gap-2 mb-3 sm:flex-row flex-col"
+                      >
+                        <DebouncedInput
+                          type="text"
+                          placeholder="Trait Type (e.g., Color)"
+                          value={attr.trait_type}
+                          onChange={(value: string) =>
+                            handleUpdateAttribute(index, 'trait_type', value)
+                          }
+                          className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
+                          aria-label={`Trait type ${index + 1}`}
+                        />
+                        <DebouncedInput
+                          type="text"
+                          placeholder="Value (e.g., Blue)"
+                          value={attr.value}
+                          onChange={(value: string) =>
+                            handleUpdateAttribute(index, 'value', value)
+                          }
+                          className="w-full p-3 rounded-lg bg-neutral2-3 text-white placeholder-gray-400 border border-neutral2-20 focus:border-purple-500"
+                          aria-label={`Trait value ${index + 1}`}
+                        />
+                        <Button
+                          className="p-3 bg-red-500 rounded-lg sm:self-start"
+                          child={<CloseIcon />}
+                          onClick={() => handleRemoveAttribute(index)}
+                          aria-label={`Remove attribute ${index + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Image Preview */}
+                {previewUrl && (
+                  <div className="relative mt-4 rounded-lg overflow-hidden group">
+                    <div className="relative bg-neutral2-1 p-2 rounded-lg">
+                      <Image
+                        src={previewUrl}
+                        alt="NFT Preview"
+                        className="w-full h-48 sm:h-64 object-cover rounded"
+                        width={300}
+                        height={200}
+                      />
+                      {isUploading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded">
+                          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                      <button
+                        onClick={handleRemoveImage}
+                        className="absolute top-4 right-4 p-1 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition-opacity opacity-0 group-hover:opacity-100"
+                        disabled={isUploading}
+                      >
+                        <CloseIcon />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="fixed bottom-4 w-full mx-auto rounded-[1.25rem] p-2 flex gap-2 items-center bg-neutral2-3 z-20 md:p-4 md:w-full md:bg-transparent md:relative md:mx-0 md:justify-end md:bottom-0">
+            <div className="p-4 flex gap-2 items-center bg-[#1a1a1ab3] backdrop-blur-[50px] md:p-4 md:justify-end">
               <UploadImgButton
                 fileInputRef={fileInputRef}
                 setPreviewUrl={setPreviewUrl}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { INftItem, INftActivity } from '@/interfaces/nft';
 import { useUserProfile } from '@/context/user-context';
@@ -27,6 +27,9 @@ import {
 } from '@/apis/configs/client';
 import { toast } from 'react-toastify';
 import { formatEther } from 'ethers/lib/utils';
+import { BidItem, OfferItem } from '../../market/components/offer-item';
+import { Pagination } from '@/components/pagination';
+import { ViewMyBidModal } from '@/sections/market/components/my-bids-modal';
 
 const DetailItem = ({ title, value }: { title: string; value: string }) => (
   <div className="py-2 space-y-2 bg-neutral2-3 rounded-[20px] transition-colors duration-200 shadow-card p-2 flex flex-col">
@@ -41,6 +44,7 @@ const DetailItem = ({ title, value }: { title: string; value: string }) => (
 
 export default function NftDetailView({ id }: { id: string }) {
   const { userProfile } = useUserProfile();
+  const offersPerPage = 5;
   const [nft, setNft] = useState<INftItem | null>(null);
   const [history, setHistory] = useState<INftActivity[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -57,6 +61,8 @@ export default function NftDetailView({ id }: { id: string }) {
   const [auctionStatus, setAuctionStatus] = useState<string | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
   const [auctionInfo, setAuctionInfo] = useState<any>(null);
+  const [currentOfferPage, setCurrentOfferPage] = useState(1);
+  const [isViewMyBidModalOpen, setIsViewMyBidModalOpen] = useState(false);
 
   const walletClient = ConnectWalletClient();
   const publicClient = ConnectPublicClient();
@@ -85,9 +91,18 @@ export default function NftDetailView({ id }: { id: string }) {
     setLoading(true);
     try {
       const response = await getNftDetail(id);
-      console.log('NFT Detail:', response.data);
       setNft(response.data);
-      setHistory(response.data.activities || []);
+      const historyNft = response.data.activities?.filter((activity) =>
+        [
+          'LISTED_FOR_AUCTION',
+          'LISTED_FOR_SALE',
+          'MINTED',
+          'SOLD',
+          'UNLISTED',
+          'TRANSFERRED',
+        ].includes(activity.actionType)
+      );
+      setHistory(historyNft || []);
     } catch (error) {
       console.error('Error fetching NFT:', error);
       toast.error('Failed to fetch NFT details.');
@@ -304,10 +319,8 @@ export default function NftDetailView({ id }: { id: string }) {
       setTxHash(txHash);
       setIsSuccessModalOpen(true);
       await fetchNFT();
-      toast.success(`NFT purchased successfully! Tx: ${txHash}`);
     } catch (error) {
       console.error('Error buying NFT:', error);
-      toast.error('Failed to buy NFT. Check console for details.');
     }
   };
 
@@ -325,29 +338,35 @@ export default function NftDetailView({ id }: { id: string }) {
     }
 
     try {
-      const price = parseEther(offerAmount.toString());
-      const { request } = await publicClient.simulateContract({
-        address: getMarketplaceAddress() as `0x${string}`,
-        abi: getMarketplaceAbi(),
-        functionName: 'makeOffer',
-        args: [
-          BigInt(nft.listing[0].saleId),
-          price,
-          BigInt(Math.floor(Date.now() / 1000) + 7 * 24 * 3600),
-        ],
-        account: account as `0x${string}`,
-        value: price,
-      });
-      const txHash = await (await walletClient).writeContract(request);
-      await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (userOffer) {
+        // Gọi API edit offer
+        await handleEditOffer(userOffer.id, offerAmount);
+        toast.success('Offer updated successfully!');
+      } else {
+        const price = parseEther(offerAmount.toString());
+        const { request } = await publicClient.simulateContract({
+          address: getMarketplaceAddress() as `0x${string}`,
+          abi: getMarketplaceAbi(),
+          functionName: 'makeOffer',
+          args: [
+            BigInt(nft.listing[0].saleId),
+            price,
+            BigInt(Math.floor(Date.now() / 1000) + 7 * 24 * 3600),
+          ],
+          account: account as `0x${string}`,
+          value: price,
+        });
+        const txHash = await (await walletClient).writeContract(request);
+        await publicClient.waitForTransactionReceipt({ hash: txHash });
 
-      setTxHash(txHash);
-      setIsSuccessModalOpen(true);
+        setTxHash(txHash);
+        setIsSuccessModalOpen(true);
+        toast.success(`Offer made successfully! Tx: ${txHash}`);
+      }
       await fetchNFT();
-      toast.success(`Offer made successfully! Tx: ${txHash}`);
     } catch (error) {
-      console.error('Error making offer:', error);
-      toast.error('Failed to make offer. Check console for details.');
+      console.error('Error making/editing offer:', error);
+      toast.error('Failed to process offer. Check console for details.');
     }
   };
 
@@ -397,7 +416,7 @@ export default function NftDetailView({ id }: { id: string }) {
         functionName: 'bid',
         args: [BigInt(nft.listing[0].auctionId), bidValue],
         account: account as `0x${string}`,
-        value: bidValue,
+        value: BigInt(0),
       });
       const txHash = await (await walletClient).writeContract(request);
       await publicClient.waitForTransactionReceipt({ hash: txHash });
@@ -467,70 +486,76 @@ export default function NftDetailView({ id }: { id: string }) {
     if (isListing) return;
     setIsListing(true);
     try {
-      const operatorAddress =
-        modalType === 'LISTING' ? getMarketplaceAddress() : getAuctionAddress();
+      if (modalType === 'LISTING' || modalType === 'AUCTION') {
+        const operatorAddress =
+          modalType === 'LISTING'
+            ? getMarketplaceAddress()
+            : getAuctionAddress();
 
-      const isApproved = await publicClient.readContract({
-        address: nft.contractAddress as `0x${string}`,
-        abi: getNftAbi(),
-        functionName: 'isApprovedForAll',
-        args: [account as `0x${string}`, operatorAddress as `0x${string}`],
-      });
+        const isApproved = await publicClient.readContract({
+          address: nft.contractAddress as `0x${string}`,
+          abi: getNftAbi(),
+          functionName: 'isApprovedForAll',
+          args: [account as `0x${string}`, operatorAddress as `0x${string}`],
+        });
 
-      if (!isApproved) {
-        const { request: approvalRequest } =
-          await publicClient.simulateContract({
-            address: nft.contractAddress as `0x${string}`,
-            abi: getNftAbi(),
-            functionName: 'setApprovalForAll',
-            args: [operatorAddress as `0x${string}`, true],
+        if (!isApproved) {
+          const { request: approvalRequest } =
+            await publicClient.simulateContract({
+              address: nft.contractAddress as `0x${string}`,
+              abi: getNftAbi(),
+              functionName: 'setApprovalForAll',
+              args: [operatorAddress as `0x${string}`, true],
+              account: account as `0x${string}`,
+            });
+          const approvalTxHash = await (
+            await walletClient
+          ).writeContract(approvalRequest);
+          await publicClient.waitForTransactionReceipt({
+            hash: approvalTxHash,
+          });
+        }
+
+        const startTime = BigInt(Math.floor(Date.now() / 1000));
+        const endTime = expireDate
+          ? BigInt(Math.floor(expireDate.getTime() / 1000))
+          : startTime + BigInt(7 * 24 * 3600);
+        const price = parseEther(amount.toString());
+        let txHash;
+
+        if (modalType === 'LISTING') {
+          const { request } = await publicClient.simulateContract({
+            address: getMarketplaceAddress() as `0x${string}`,
+            abi: getMarketplaceAbi(),
+            functionName: 'createSale',
+            args: [
+              BigInt(nft.tokenId),
+              nft.contractAddress as `0x${string}`,
+              startTime,
+              endTime,
+              price,
+            ],
             account: account as `0x${string}`,
           });
-        const approvalTxHash = await (
-          await walletClient
-        ).writeContract(approvalRequest);
-        await publicClient.waitForTransactionReceipt({ hash: approvalTxHash });
-      }
-
-      const startTime = BigInt(Math.floor(Date.now() / 1000));
-      const endTime = expireDate
-        ? BigInt(Math.floor(expireDate.getTime() / 1000))
-        : startTime + BigInt(7 * 24 * 3600);
-      const price = parseEther(amount.toString());
-      let txHash;
-
-      if (modalType === 'LISTING') {
-        const { request } = await publicClient.simulateContract({
-          address: getMarketplaceAddress() as `0x${string}`,
-          abi: getMarketplaceAbi(),
-          functionName: 'createSale',
-          args: [
-            BigInt(nft.tokenId),
-            nft.contractAddress as `0x${string}`,
-            startTime,
-            endTime,
-            price,
-          ],
-          account: account as `0x${string}`,
-        });
-        txHash = await (await walletClient).writeContract(request);
-        await publicClient.waitForTransactionReceipt({ hash: txHash });
-      } else if (modalType === 'AUCTION') {
-        const { request } = await publicClient.simulateContract({
-          address: getAuctionAddress() as `0x${string}`,
-          abi: getAuctionAbi(),
-          functionName: 'createAuction',
-          args: [
-            nft.contractAddress as `0x${string}`,
-            BigInt(nft.tokenId),
-            price,
-            startTime,
-            endTime,
-          ],
-          account: account as `0x${string}`,
-        });
-        txHash = await (await walletClient).writeContract(request);
-        await publicClient.waitForTransactionReceipt({ hash: txHash });
+          txHash = await (await walletClient).writeContract(request);
+          await publicClient.waitForTransactionReceipt({ hash: txHash });
+        } else if (modalType === 'AUCTION') {
+          const { request } = await publicClient.simulateContract({
+            address: getAuctionAddress() as `0x${string}`,
+            abi: getAuctionAbi(),
+            functionName: 'createAuction',
+            args: [
+              nft.contractAddress as `0x${string}`,
+              BigInt(nft.tokenId),
+              price,
+              startTime,
+              endTime,
+            ],
+            account: account as `0x${string}`,
+          });
+          txHash = await (await walletClient).writeContract(request);
+          await publicClient.waitForTransactionReceipt({ hash: txHash });
+        }
       } else if (modalType === 'OFFER') {
         await handleMakeOffer(amount);
         return;
@@ -549,6 +574,92 @@ export default function NftDetailView({ id }: { id: string }) {
     } finally {
       setIsListing(false);
     }
+  };
+
+  const handleEditOffer = async (offerId: string, newPrice: number) => {
+    try {
+      // Giả định API call, thay bằng endpoint thực tế
+      const response = await fetch(`/api/offers/${offerId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offerPrice: newPrice }),
+      });
+      if (!response.ok) throw new Error('Failed to edit offer');
+      return await response.json();
+    } catch (error) {
+      console.error('Error editing offer:', error);
+      throw error;
+    }
+  };
+
+  const userBid = useMemo(() => {
+    if (!userProfile || !nft?.activities) return [];
+    return nft.activities.filter(
+      (activity) =>
+        activity.actionType === 'PLACE_BID' &&
+        activity.fromAddress?.toLowerCase() ===
+          userProfile.address.toLowerCase()
+    );
+  }, [nft?.activities, userProfile]);
+
+  const userOffer = useMemo(() => {
+    if (!userProfile || !nft?.offers) return null;
+    return nft.offers.find(
+      (offer) =>
+        offer.userOfferId.toLowerCase() === userProfile.id.toLowerCase()
+    );
+  }, [nft?.offers, userProfile]);
+
+  const userHasBid = useMemo(() => {
+    if (!userProfile || !nft?.activities) return false;
+    return nft.activities.some(
+      (activity) =>
+        activity.actionType === 'PLACE_BID' &&
+        activity.fromAddress?.toLowerCase() ===
+          userProfile.address.toLowerCase()
+    );
+  }, [nft?.activities, userProfile]);
+
+  // Lọc danh sách bid cho Auction
+  // const bidOffers = useMemo(() => {
+  //   if (!nft?.offers || !nft.listing?.[0]?.auctionId) return [];
+  //   return nft.offers.filter((offer) => offer.auctionId === nft.listing![0].id);
+  // }, [nft?.offers, nft?.listing]);
+
+  const bidActivities = useMemo(() => {
+    if (!nft?.activities || !nft.listing?.[0]?.auctionId) return [];
+    return nft.activities.filter(
+      (activity) => activity.actionType === 'PLACE_BID'
+    );
+  }, [nft?.activities, nft?.listing]);
+
+  const offerActivities = useMemo(() => {
+    if (!nft?.activities || !nft.listing?.[0]?.saleId) return [];
+    return nft.activities.filter((activity) =>
+      [
+        'CREATED_OFFER',
+        'CANCELED_OFFER',
+        'ACCEPTED_OFFER',
+        'REJECTED_OFFER',
+      ].includes(activity.actionType)
+    );
+  }, [nft?.activities, nft?.listing]);
+
+  // Phân trang cho offers
+  const paginatedOffers = useMemo(() => {
+    const start = (currentOfferPage - 1) * offersPerPage;
+    return offerActivities.slice(start, start + offersPerPage);
+  }, [offerActivities, currentOfferPage]);
+
+  // Xử lý edit offer
+  const handleOpenEditOfferModal = async (
+    offerId: string,
+    currentPrice: number
+  ) => {
+    setModalType('OFFER');
+    setIsListModalOpen(true);
+    // Giả định ListModal hỗ trợ edit offer bằng cách truyền offerId
+    // Có thể cần cập nhật ListModal để xử lý edit
   };
 
   if (loading) {
@@ -652,11 +763,17 @@ export default function NftDetailView({ id }: { id: string }) {
 
           {isListed && nft.listing && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <DetailItem title="Top Offer" value={'0.1 INK'} />
-              <DetailItem title="Collection Floor" value={'0.1 INK'} />
               <DetailItem
-                title="Last Sale"
-                value={`${nft.listing ? nft.listing[0].price.toString() : 0} INK`}
+                title="Top Offer"
+                value={`${nft?.offers && nft?.offers[0]?.saleId ? nft.offers[0].offerPrice.toString() + ' INK' : '-'}`}
+              />
+              <DetailItem
+                title="Top Bid"
+                value={`${nft?.offers && nft?.offers[0]?.auctionId ? nft.offers[0].offerPrice.toString() + ' INK' : '-'}`}
+              />
+              <DetailItem
+                title="Initial Price"
+                value={`${nft.listing ? nft.listing[0].price.toString() + ' INK' : '-'}`}
               />
             </div>
           )}
@@ -722,12 +839,28 @@ export default function NftDetailView({ id }: { id: string }) {
                   </>
                 )}
                 {isAuction && (
-                  <button
-                    onClick={handleOpenBidModal}
-                    className="flex-1 min-w-[120px] px-4 py-2 bg-gradient-to-r from-green-600 to-green-800 text-white font-semibold rounded-full shadow-card hover:shadow-wrapper transition-all duration-300"
-                  >
-                    Place Bid
-                  </button>
+                  <>
+                    {userHasBid ? (
+                      <button
+                        onClick={() => setIsViewMyBidModalOpen(true)}
+                        className="flex-1 min-w-[120px] px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
+                        View My Bid
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleOpenBidModal}
+                        disabled={!['ONGOING'].includes(auctionStatus || '')}
+                        className={`flex-1 min-w-[120px] px-4 py-2 rounded-full shadow-lg transition-all duration-300 ${
+                          !['ONGOING'].includes(auctionStatus || '')
+                            ? 'bg-gray-600 cursor-not-allowed text-gray-400'
+                            : 'bg-gradient-to-r from-green-600 to-green-800 text-white hover:shadow-xl'
+                        }`}
+                      >
+                        Place Bid
+                      </button>
+                    )}
+                  </>
                 )}
                 {canClaim && (
                   <button
@@ -796,28 +929,59 @@ export default function NftDetailView({ id }: { id: string }) {
                 </div>
               )}
               {activeTab === 'orders' && (
-                <div className="space-y-2">
-                  <Typography level="baser" className="text-gray-100">
-                    {nft.offers && nft.offers.length > 0 ? (
-                      <div className="space-y-2">
-                        {nft.offers.map((order, index: number) => (
-                          <div
-                            key={index}
-                            className="bg-neutral2-5 p-2 rounded-md shadow-card"
-                          >
-                            <Typography level="h3" className="text-gray-400">
-                              {order ? 'Sale' : 'Auction'} #{index + 1}
-                            </Typography>
-                            <Typography level="baser" className="text-gray-100">
-                              Price: {order.offerPrice || 0} INK
-                            </Typography>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-gray-400">No active offers</div>
-                    )}
-                  </Typography>
+                <div className="space-y-4">
+                  {isSale && (
+                    <div>
+                      <Typography level="h4" className="text-gray-100 mb-4">
+                        Sale Offers
+                      </Typography>
+                      {paginatedOffers.length > 0 ? (
+                        <div className="space-y-3">
+                          {paginatedOffers.map((offer) => (
+                            <OfferItem
+                              key={offer.id}
+                              offer={offer}
+                              isUserOffer={offer.id === userOffer?.id}
+                              onEdit={handleEditOffer}
+                            />
+                          ))}
+                          <Pagination
+                            totalItems={offerActivities.length}
+                            itemsPerPage={offersPerPage}
+                            currentPage={currentOfferPage}
+                            onPageChange={setCurrentOfferPage}
+                          />
+                        </div>
+                      ) : (
+                        <Typography level="base2r" className="text-gray-400">
+                          No offers yet.
+                        </Typography>
+                      )}
+                    </div>
+                  )}
+                  {isAuction && (
+                    <div className="space-y-4">
+                      {bidActivities.length > 0 ? (
+                        <div className="space-y-4">
+                          {bidActivities.map((activity) => (
+                            <BidItem key={activity.id} activity={activity} />
+                          ))}
+                        </div>
+                      ) : (
+                        <Typography
+                          level="base2r"
+                          className="text-gray-400 italic"
+                        >
+                          No bids placed yet.
+                        </Typography>
+                      )}
+                    </div>
+                  )}
+                  {!isSale && !isAuction && (
+                    <Typography level="base2r" className="text-gray-400">
+                      No active sale or auction.
+                    </Typography>
+                  )}
                 </div>
               )}
             </div>
@@ -841,6 +1005,11 @@ export default function NftDetailView({ id }: { id: string }) {
         onClose={() => setIsSuccessModalOpen(false)}
         hash={txHash}
         title="SUCCESS"
+      />
+      <ViewMyBidModal
+        isOpen={isViewMyBidModalOpen}
+        onClose={() => setIsViewMyBidModalOpen(false)}
+        bids={userBid}
       />
     </section>
   );
