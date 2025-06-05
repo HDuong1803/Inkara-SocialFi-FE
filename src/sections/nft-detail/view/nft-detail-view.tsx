@@ -649,13 +649,13 @@ export default function NftDetailView({ id }: { id: string }) {
     return offerActivities.slice(start, start + offersPerPage);
   }, [offerActivities, currentOfferPage]);
 
-  const handleOpenEditOfferModal = async (
-    offerId: string,
-    currentPrice: number
-  ) => {
-    setModalType('OFFER');
-    setIsListModalOpen(true);
-  };
+  // const handleOpenEditOfferModal = async (
+  //   offerId: string,
+  //   currentPrice: number
+  // ) => {
+  //   setModalType('OFFER');
+  //   setIsListModalOpen(true);
+  // };
 
   if (loading) {
     return (
