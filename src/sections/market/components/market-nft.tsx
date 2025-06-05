@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Typography } from '@/components/typography';
 import { IListingItem } from '@/interfaces/market';
+import { getStatusStyle } from '@/utils/helper';
 
 interface MarketNFTProps {
   item: IListingItem;
@@ -15,6 +16,8 @@ export default function MarketNFT({ item }: MarketNFTProps) {
   const isSale = !!item.saleId && item.status === 'ACTIVE';
   const isAuction = !!item.auctionId && item.status === 'ACTIVE';
   const isListed = isSale || isAuction;
+  const isExpired = new Date(item.expiresAt) < new Date();
+  const auctionStatus = isExpired ? 'ENDED' : 'ONGOING';
 
   return (
     <div className="group relative rounded-[20px] bg-neutral2-3 p-4 shadow-card hover:shadow-wrapper hover:bg-neutral2-5 transition-all duration-300 hover:-translate-y-1">
@@ -38,30 +41,42 @@ export default function MarketNFT({ item }: MarketNFTProps) {
           >
             {isSale ? 'For Sale' : isAuction ? 'In Auction' : 'Not Listed'}
           </span>
-        </div>
-      </Link>
-      <div className="mt-4">
-        <Typography level="baser" className="font-semibold text-gray-100 truncate">
-          {item.nft.name}
-        </Typography>
-        <Typography level="small" className="text-gray-400">
-          <span className="absolute top-10 left-5 bg-gradient-to-r from-gray-600 to-gray-800 text-gray-300 text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+          <span className="absolute top-3 left-3 bg-gradient-to-r from-gray-600 to-gray-800 text-gray-300 text-xs font-semibold px-3 py-1 rounded-full shadow-md">
             #{item.nft.tokenId}
           </span>
-        </Typography>
-        <div className="mt-4 flex justify-center gap-3">
-            <div className="flex items-center">
-            <Typography
-              level="h5"
-              className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cherry text-white"
+        </div>
+      </Link>
+      <div className="mt-4 space-y-3">
+        <div className="flex justify-between items-center">
+          <Typography
+            level="baser"
+            className="font-semibold text-gray-100 truncate max-w-[60%]"
+          >
+            {item.nft.name}
+          </Typography>
+          <Typography
+            level="h5"
+            className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cherry text-white"
+          >
+            {item.price} INK
+          </Typography>
+        </div>
+        <div className="flex justify-between items-center gap-1.5">
+          {isAuction ? (
+            <span
+              className={`px-4 py-1 rounded-full text-sm ${getStatusStyle(auctionStatus || '')}`}
             >
-              ${item.price} INK
-            </Typography>
-            </div>
+              {auctionStatus}
+            </span>
+          ) : (
+           <span
+              className={`px-4 py-1 rounded-full text-sm ${getStatusStyle('ONGOING')}`}
+            >
+              {'ONGOING'}
+            </span>
+          )}
           <Link href={`/nfts/${item.nft.id}`}>
-            <button
-              className={`px-4 py-2 font-semibold rounded-full shadow-card hover:shadow-wrapper transition-all duration-300 bg-gradient-to-r from-cherry to-black-600 text-white hover:bg-gradient-to-l`}
-            >
+            <button className="px-4 py-2 font-semibold rounded-full shadow-card hover:shadow-wrapper transition-all duration-300 bg-gradient-to-r from-cherry to-black-600 text-white hover:bg-gradient-to-l">
               View Listing
             </button>
           </Link>

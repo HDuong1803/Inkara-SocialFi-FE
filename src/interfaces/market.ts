@@ -1,5 +1,10 @@
 import { IAttribute } from "./nft";
 
+export enum AuctionStatus {
+    ONGOING = 'ONGOING',
+    ENDED = 'ENDED',
+}
+
 export interface IListingItem {
     id: string;
     saleId?: string;

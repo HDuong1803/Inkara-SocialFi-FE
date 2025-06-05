@@ -30,6 +30,8 @@ import { formatEther } from 'ethers/lib/utils';
 import { BidItem, OfferItem } from '../../market/components/offer-item';
 import { Pagination } from '@/components/pagination';
 import { ViewMyBidModal } from '@/sections/market/components/my-bids-modal';
+import { bytes32ToString, getStatusStyle } from '@/utils/helper';
+import CountdownTimer from '@/sections/market/components/count-down/timer';
 
 const DetailItem = ({ title, value }: { title: string; value: string }) => (
   <div className="py-2 space-y-2 bg-neutral2-3 rounded-[20px] transition-colors duration-200 shadow-card p-2 flex flex-col">
@@ -114,8 +116,8 @@ export default function NftDetailView({ id }: { id: string }) {
   const fetchMinimumBid = useCallback(async () => {
     if (!publicClient || !auctionInfo) return;
     try {
-      const lastBid = Number(formatEther(auctionInfo.lastBid));
-      const initialPrice = Number(formatEther(auctionInfo.initialPrice));
+      const lastBid = Number(formatEther(auctionInfo[6]));
+      const initialPrice = Number(formatEther(auctionInfo[4]));
       const minimumBidRate =
         Number(
           await publicClient.readContract({
@@ -130,7 +132,7 @@ export default function NftDetailView({ id }: { id: string }) {
     } catch (error) {
       console.error('Error fetching minimum bid:', error);
     }
-  }, []);
+  }, [auctionInfo]);
 
   const fetchAuctionStatus = useCallback(async () => {
     if (!publicClient || !auctionInfo) return;
@@ -139,13 +141,13 @@ export default function NftDetailView({ id }: { id: string }) {
         address: getAuctionAddress() as `0x${string}`,
         abi: getAuctionAbi(),
         functionName: 'getAuctionStatus',
-        args: [BigInt(auctionInfo.id)],
+        args: [BigInt(auctionInfo[1])],
       })) as string;
-      setAuctionStatus(status);
+      setAuctionStatus(bytes32ToString(status));
     } catch (error) {
       console.error('Error fetching auction status:', error);
     }
-  }, [publicClient]);
+  }, [auctionInfo, publicClient]);
 
   const fetchAuctionInfo = useCallback(async (auctionId: string) => {
     if (!publicClient || !auctionId) return;
@@ -339,7 +341,6 @@ export default function NftDetailView({ id }: { id: string }) {
 
     try {
       if (userOffer) {
-        // Gọi API edit offer
         await handleEditOffer(userOffer.id, offerAmount);
         toast.success('Offer updated successfully!');
       } else {
@@ -452,8 +453,8 @@ export default function NftDetailView({ id }: { id: string }) {
       })) as any;
 
       if (
-        account.toLowerCase() !== auctionData.lastBidder.toLowerCase() &&
-        account.toLowerCase() !== auctionData.auctioneer.toLowerCase()
+        account.toLowerCase() !== auctionData[7].toLowerCase() &&
+        account.toLowerCase() !== auctionData[0].toLowerCase()
       ) {
         return;
       }
@@ -578,7 +579,6 @@ export default function NftDetailView({ id }: { id: string }) {
 
   const handleEditOffer = async (offerId: string, newPrice: number) => {
     try {
-      // Giả định API call, thay bằng endpoint thực tế
       const response = await fetch(`/api/offers/${offerId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -620,7 +620,6 @@ export default function NftDetailView({ id }: { id: string }) {
     );
   }, [nft?.activities, userProfile]);
 
-  // Lọc danh sách bid cho Auction
   // const bidOffers = useMemo(() => {
   //   if (!nft?.offers || !nft.listing?.[0]?.auctionId) return [];
   //   return nft.offers.filter((offer) => offer.auctionId === nft.listing![0].id);
@@ -645,21 +644,17 @@ export default function NftDetailView({ id }: { id: string }) {
     );
   }, [nft?.activities, nft?.listing]);
 
-  // Phân trang cho offers
   const paginatedOffers = useMemo(() => {
     const start = (currentOfferPage - 1) * offersPerPage;
     return offerActivities.slice(start, start + offersPerPage);
   }, [offerActivities, currentOfferPage]);
 
-  // Xử lý edit offer
   const handleOpenEditOfferModal = async (
     offerId: string,
     currentPrice: number
   ) => {
     setModalType('OFFER');
     setIsListModalOpen(true);
-    // Giả định ListModal hỗ trợ edit offer bằng cách truyền offerId
-    // Có thể cần cập nhật ListModal để xử lý edit
   };
 
   if (loading) {
@@ -707,9 +702,7 @@ export default function NftDetailView({ id }: { id: string }) {
     isAuction &&
     ['ENDED', 'CANCELLED'].includes(auctionStatus || '') &&
     (userProfile?.id === nft.listing?.[0]?.sellerId ||
-      userProfile?.address.toLowerCase() ===
-        auctionInfo.lastBidder?.toLowerCase());
-
+      userProfile?.address.toLowerCase() === auctionInfo[7].toLowerCase());
   const shortenAddress = (address: string) =>
     address ? `${address.slice(0, 8)}...${address.slice(-8)}` : '-';
 
@@ -728,60 +721,72 @@ export default function NftDetailView({ id }: { id: string }) {
         </div>
 
         <div className="space-y-4">
-          <Typography
-            level="h3"
-            className="text-gray-100 flex items-center gap-2"
-          >
-            <span>
-              {nft.name} #{nft.tokenId}
-            </span>
-            {nft.tokenId && (
-              <a
-                href={`https://amoy.polygonscan.com/token/${nft.contractAddress}?a=${nft.tokenId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-2 text-gray-100 hover:text-cherry inline-flex items-center"
-                title="View NFT"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Typography
+              level="h3"
+              className="text-gray-100 flex items-center gap-2"
+            >
+              <span>
+                {nft.name} #{nft.tokenId}
+              </span>
+              {nft.tokenId && (
+                <a
+                  href={`https://amoy.polygonscan.com/token/${nft.contractAddress}?a=${nft.tokenId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 text-gray-100 hover:text-cherry inline-flex items-center"
+                  title="View NFT"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
-              </a>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </a>
+              )}
+            </Typography>
+            {isAuction && (
+              <span
+                className={`px-4 py-1 rounded-full text-sm ${getStatusStyle(auctionStatus || '')}`}
+              >
+                {auctionStatus}
+              </span>
             )}
-          </Typography>
+          </div>
 
           {isListed && nft.listing && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <DetailItem
-                title="Top Offer"
-                value={`${nft?.offers && nft?.offers[0]?.saleId ? nft.offers[0].offerPrice.toString() + ' INK' : '-'}`}
-              />
-              <DetailItem
-                title="Top Bid"
-                value={`${nft?.offers && nft?.offers[0]?.auctionId ? nft.offers[0].offerPrice.toString() + ' INK' : '-'}`}
-              />
+              {nft.listing[0].saleId ? (
+                <DetailItem
+                  title="Top Offer"
+                  value={`${nft?.offers && nft?.offers[0]?.saleId ? nft.offers[0].offerPrice.toString() + ' INK' : '-'}`}
+                />
+              ) : (
+                <>
+                  <CountdownTimer
+                    targetDate={auctionInfo ? Number(auctionInfo[9]) * 1000 : 0}
+                  />
+                  <DetailItem
+                    title="Top Bid"
+                    value={`${nft?.offers && nft?.offers[0]?.auctionId ? nft.offers[0].offerPrice.toString() + ' INK' : '-'}`}
+                  />
+                </>
+              )}
+
               <DetailItem
                 title="Initial Price"
                 value={`${nft.listing ? nft.listing[0].price.toString() + ' INK' : '-'}`}
               />
             </div>
-          )}
-
-          {isAuction && auctionStatus && (
-            <Typography level="baser" className="text-gray-100">
-              Status Auction: {auctionStatus}
-            </Typography>
           )}
 
           <div className="flex flex-wrap gap-3">
@@ -800,7 +805,33 @@ export default function NftDetailView({ id }: { id: string }) {
                       disabled={isClaiming}
                       className="flex-1 min-w-[120px] px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold rounded-full shadow-card hover:shadow-wrapper disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-300"
                     >
-                      {isClaiming ? 'Đang Claim...' : 'Claim NFT'}
+                      {isClaiming ? (
+                        <span className="flex items-center justify-center">
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Claiming...
+                        </span>
+                      ) : (
+                        'Claim NFT'
+                      )}
                     </button>
                   )}
                 </>
@@ -847,17 +878,18 @@ export default function NftDetailView({ id }: { id: string }) {
                       >
                         View My Bid
                       </button>
-                    ) : (
+                    ) : ['ONGOING'].includes(auctionStatus || '') ? (
                       <button
                         onClick={handleOpenBidModal}
-                        disabled={!['ONGOING'].includes(auctionStatus || '')}
-                        className={`flex-1 min-w-[120px] px-4 py-2 rounded-full shadow-lg transition-all duration-300 ${
-                          !['ONGOING'].includes(auctionStatus || '')
-                            ? 'bg-gray-600 cursor-not-allowed text-gray-400'
-                            : 'bg-gradient-to-r from-green-600 to-green-800 text-white hover:shadow-xl'
-                        }`}
+                        className={`flex-1 min-w-[120px] px-4 py-2 rounded-full shadow-lg transition-all duration-300 bg-gradient-to-r from-green-600 to-green-800 text-white hover:shadow-xl`}
                       >
                         Place Bid
+                      </button>
+                    ) : (
+                      <button
+                        className={`flex-1 min-w-[120px] px-4 py-2 rounded-full shadow-lg transition-all duration-300 bg-gray-600 cursor-not-allowed text-gray-400`}
+                      >
+                        Auction ended
                       </button>
                     )}
                   </>
@@ -868,7 +900,33 @@ export default function NftDetailView({ id }: { id: string }) {
                     disabled={isClaiming}
                     className="flex-1 min-w-[120px] px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold rounded-full shadow-card hover:shadow-wrapper disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-300"
                   >
-                    {isClaiming ? 'Đang Claim...' : 'Claim NFT'}
+                    {isClaiming ? (
+                      <span className="flex items-center justify-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Claiming...
+                      </span>
+                    ) : (
+                      'Claim NFT'
+                    )}
                   </button>
                 )}
               </>
