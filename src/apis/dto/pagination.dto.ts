@@ -4,3 +4,9 @@ export interface OutputPagination {
   sort: string;
   order: string;
 }
+
+export interface InputPagination {
+  startId?: string | null;
+  offset?: number;
+  limit?: number;
+}
